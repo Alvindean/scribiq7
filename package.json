@@ -15,8 +15,7 @@
     "@anthropic-ai/sdk": "^0.27.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.2",
-    "lucide-react": "^0.441.0",
-    "framer-motion": "^11.3.28"
+    "lucide-react": "^0.441.0"
   },
   "devDependencies": {
     "typescript": "^5",

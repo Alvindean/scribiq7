@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { getNiches } from '@/lib/bible'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { BibleBrowser } from '@/components/BibleBrowser'
@@ -21,7 +22,17 @@ export default async function BiblePage() {
           />
         </div>
 
-        <BibleBrowser niches={niches} />
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-44 bg-surface rounded-xl animate-pulse" />
+              ))}
+            </div>
+          }
+        >
+          <BibleBrowser niches={niches} />
+        </Suspense>
       </div>
     </div>
   )

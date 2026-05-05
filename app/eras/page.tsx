@@ -1,19 +1,11 @@
+import Link from 'next/link'
 import { getEras } from '@/lib/bible'
 import type { Era } from '@/lib/bible'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Badge } from '@/components/ui/Badge'
 
-// Extended era type for fields beyond the base interface
-interface EraFull extends Era {
-  dominantStyle?: string
-  keyFigures?: string[]
-  legendaryWorks?: string[]
-  whatSurvived?: string
-  modernEquivalent?: string
-}
-
 export default async function ErasPage() {
-  const eras = (await getEras()) as EraFull[]
+  const eras = await getEras()
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-16">
@@ -36,7 +28,7 @@ export default async function ErasPage() {
   )
 }
 
-function EraEntry({ era, isLast }: { era: EraFull; isLast: boolean }) {
+function EraEntry({ era, isLast }: { era: Era; isLast: boolean }) {
   return (
     <div className={`relative flex gap-8 ${isLast ? '' : 'pb-14'}`}>
       {/* Timeline dot */}
@@ -148,11 +140,22 @@ function EraEntry({ era, isLast }: { era: EraFull; isLast: boolean }) {
 
         {/* Modern Equivalent */}
         {era.modernEquivalent && (
-          <p className="text-xs font-sans text-[#8888A8] italic">
+          <p className="text-xs font-sans text-[#C8C8DC] italic">
             <span className="font-semibold not-italic text-[#8888A8]">Modern equivalent: </span>
             {era.modernEquivalent}
           </p>
         )}
+
+        {/* Generate CTA */}
+        <Link
+          href={`/generate?era=${era.id}`}
+          className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-brand hover:text-[#E6C25A] transition-colors"
+        >
+          Write in this era's voice
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
       </div>
     </div>
   )

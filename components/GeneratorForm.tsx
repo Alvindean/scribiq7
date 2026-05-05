@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
 import { GenerateOptions } from '@/lib/claude'
@@ -13,6 +13,7 @@ interface GeneratorFormProps {
   initialPersonaId?: string
   initialEraId?: string
   initialCustomRules?: string
+  autoLoadSample?: boolean
   onSubmit: (formData: GenerateOptions & { nicheId?: string; personaId?: string }) => void
   isLoading: boolean
 }
@@ -36,16 +37,43 @@ export function GeneratorForm({
   initialPersonaId,
   initialEraId,
   initialCustomRules,
+  autoLoadSample,
   onSubmit,
   isLoading,
 }: GeneratorFormProps) {
-  const [topic, setTopic] = useState('')
-  const [nicheId, setNicheId] = useState(initialNicheId ?? '')
-  const [personaId, setPersonaId] = useState(initialPersonaId ?? '')
-  const [targetAudience, setTargetAudience] = useState('')
+  const [topic, setTopic] = useState(autoLoadSample ? SAMPLE_TOPIC : '')
+  const [nicheId, setNicheId] = useState(() => {
+    if (initialNicheId) return initialNicheId
+    if (autoLoadSample) {
+      const pref = niches.find((n) => n.id === 'email-marketing') ?? niches[0]
+      return pref?.id ?? ''
+    }
+    return ''
+  })
+  const [personaId, setPersonaId] = useState(() => {
+    if (initialPersonaId) return initialPersonaId
+    if (autoLoadSample) {
+      const pref =
+        personas.find((p) => p.id === 'david-ogilvy') ??
+        personas.find((p) => /ogilvy/i.test(p.name)) ??
+        personas[0]
+      return pref?.id ?? ''
+    }
+    return ''
+  })
+  const [targetAudience, setTargetAudience] = useState(autoLoadSample ? SAMPLE_AUDIENCE : '')
   const [eraInfluence, setEraInfluence] = useState(initialEraId ?? '')
   const [toneNotes, setToneNotes] = useState('')
   const [customRules, setCustomRules] = useState(initialCustomRules ?? '')
+  const [sampleVisible, setSampleVisible] = useState(!!autoLoadSample)
+
+  // Hide the sample banner once user changes a sample-filled field
+  useEffect(() => {
+    if (!sampleVisible) return
+    if (topic !== SAMPLE_TOPIC || targetAudience !== SAMPLE_AUDIENCE) {
+      setSampleVisible(false)
+    }
+  }, [topic, targetAudience, sampleVisible])
 
   function loadSample() {
     setTopic(SAMPLE_TOPIC)
@@ -62,6 +90,18 @@ export function GeneratorForm({
         personas[0]
       if (preferred) setPersonaId(preferred.id)
     }
+    setSampleVisible(true)
+  }
+
+  function clearAll() {
+    setTopic('')
+    setTargetAudience('')
+    setNicheId('')
+    setPersonaId('')
+    setEraInfluence('')
+    setToneNotes('')
+    setCustomRules('')
+    setSampleVisible(false)
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -88,22 +128,43 @@ export function GeneratorForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Sample loader */}
-      <div className="flex items-center justify-between -mt-1 mb-1">
-        <p className="text-[11px] font-sans text-[#8888A8] uppercase tracking-[0.12em]">
-          New here?
-        </p>
-        <button
-          type="button"
-          onClick={loadSample}
-          className="text-xs font-sans text-brand hover:text-[#E6C25A] transition-colors inline-flex items-center gap-1"
-        >
-          Load sample
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 5.5h7M6 2.5l3 3-3 3" />
-          </svg>
-        </button>
-      </div>
+      {/* Sample banner / loader */}
+      {sampleVisible ? (
+        <div className="flex items-start gap-3 -mt-1 mb-1 p-3 rounded-xl bg-brand/8 border border-brand/20">
+          <span className="text-brand text-base shrink-0 mt-0.5">✦</span>
+          <div className="flex-1">
+            <p className="text-xs font-sans font-semibold text-brand uppercase tracking-[0.1em] mb-0.5">
+              Sample loaded
+            </p>
+            <p className="text-xs font-sans text-[#C8C8DC] leading-relaxed">
+              Click <span className="text-[#E8E8F0] font-semibold">Generate Copy</span> to see it work, or clear to start fresh.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={clearAll}
+            className="text-xs font-sans text-[#8888A8] hover:text-brand transition-colors shrink-0"
+          >
+            Clear
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between -mt-1 mb-1">
+          <p className="text-[11px] font-sans text-[#8888A8] uppercase tracking-[0.12em]">
+            New here?
+          </p>
+          <button
+            type="button"
+            onClick={loadSample}
+            className="text-xs font-sans text-brand hover:text-[#E6C25A] transition-colors inline-flex items-center gap-1"
+          >
+            Load sample
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 5.5h7M6 2.5l3 3-3 3" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Topic */}
       <div>

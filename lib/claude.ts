@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import type { Niche, Persona } from './bible'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -12,8 +13,8 @@ export interface GenerateOptions {
   topic: string
   toneNotes?: string
   customRules?: string
-  nicheData?: Record<string, unknown>
-  personaData?: Record<string, unknown>
+  nicheData?: Niche
+  personaData?: Persona
 }
 
 // ─── Prompt builder ───────────────────────────────────────────────────────────
@@ -34,13 +35,13 @@ export function buildSystemPrompt(options: GenerateOptions): string {
   if (nicheData) {
     const lines: string[] = [`## Niche: ${niche}`]
     if (nicheData.description) lines.push(`Description: ${nicheData.description}`)
-    if (Array.isArray(nicheData.rules) && nicheData.rules.length > 0) {
+    if (nicheData.rules?.length) {
       lines.push('Rules:')
-      ;(nicheData.rules as string[]).forEach((r) => lines.push(`- ${r}`))
+      nicheData.rules.forEach((r) => lines.push(`- ${r}`))
     }
     if (nicheData.toneNotes) lines.push(`Tone notes: ${nicheData.toneNotes}`)
-    if (Array.isArray(nicheData.keywords) && nicheData.keywords.length > 0) {
-      lines.push(`Keywords: ${(nicheData.keywords as string[]).join(', ')}`)
+    if (nicheData.keywords?.length) {
+      lines.push(`Keywords: ${nicheData.keywords.join(', ')}`)
     }
     nicheSection = lines.join('\n')
   }
@@ -49,15 +50,15 @@ export function buildSystemPrompt(options: GenerateOptions): string {
   if (personaData) {
     const lines: string[] = [`## Persona: ${persona}`]
     if (personaData.writingStyle) lines.push(`Writing style: ${personaData.writingStyle}`)
-    if (Array.isArray(personaData.voiceCharacteristics) && personaData.voiceCharacteristics.length > 0) {
+    if (personaData.voiceCharacteristics?.length) {
       lines.push('Voice characteristics:')
-      ;(personaData.voiceCharacteristics as string[]).forEach((v) => lines.push(`- ${v}`))
+      personaData.voiceCharacteristics.forEach((v) => lines.push(`- ${v}`))
     }
-    if (Array.isArray(personaData.signaturePhrases) && personaData.signaturePhrases.length > 0) {
-      lines.push(`Signature phrases: ${(personaData.signaturePhrases as string[]).join(' | ')}`)
+    if (personaData.signaturePhrases?.length) {
+      lines.push(`Signature phrases: ${personaData.signaturePhrases.join(' | ')}`)
     }
-    if (Array.isArray(personaData.forbiddenPhrases) && personaData.forbiddenPhrases.length > 0) {
-      lines.push(`Forbidden phrases (never use): ${(personaData.forbiddenPhrases as string[]).join(', ')}`)
+    if (personaData.forbiddenPhrases?.length) {
+      lines.push(`Forbidden phrases (never use): ${personaData.forbiddenPhrases.join(', ')}`)
     }
     personaSection = lines.join('\n')
   }

@@ -56,7 +56,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="font-sans text-lg sm:text-xl text-[#C8C8DC] max-w-2xl mx-auto leading-relaxed">
-            Generate persuasive copy in 24 legendary voices, grounded in 200 years of proven niches.
+            Write copy in the voice of Ogilvy, Halbert, or Hopkins — across 26 niches grounded in 200 years of what works. Streaming output in seconds. No signup.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">

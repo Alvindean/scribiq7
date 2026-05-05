@@ -11,8 +11,7 @@ interface NicheCardProps {
 
 export function NicheCard({ niche, featured = false }: NicheCardProps) {
   const keywords = (niche.keywords ?? []).slice(0, 3)
-  const coreFormulas = niche.coreFormulas as { name: string; description: string }[] | undefined
-  const tonePalette = niche.tonePalette as string[] | undefined
+  const { coreFormulas, tonePalette } = niche
 
   return (
     <Link href={`/bible/${niche.id}`} className="group block h-full">
@@ -39,8 +38,10 @@ export function NicheCard({ niche, featured = false }: NicheCardProps) {
         {/* Name */}
         <h3
           className={cn(
-            'font-display font-bold text-[#E8E8F0] leading-snug mb-2 group-hover:text-brand transition-colors duration-150',
-            featured ? 'text-xl' : 'text-lg'
+            'text-[#E8E8F0] leading-snug mb-2 group-hover:text-brand transition-colors duration-150 tracking-tight',
+            featured
+              ? 'font-display font-bold text-xl'
+              : 'font-sans font-semibold text-lg'
           )}
         >
           {niche.name}

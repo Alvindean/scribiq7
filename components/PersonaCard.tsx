@@ -73,7 +73,7 @@ export function PersonaCard({ persona, compact = false }: PersonaCardProps) {
       >
         {/* Top: name + archetype badge */}
         <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="font-display text-lg font-bold text-[#E8E8F0] leading-tight">
+          <h3 className="font-sans text-lg font-semibold text-[#E8E8F0] leading-tight tracking-tight">
             {persona.name}
           </h3>
           <Badge variant={badgeVariant} size="sm" className="shrink-0 mt-0.5">

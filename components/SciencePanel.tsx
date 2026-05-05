@@ -34,15 +34,7 @@ function NeurochemicalPill({ name }: { name: string }) {
 export function SciencePanel({ niche }: SciencePanelProps) {
   const [open, setOpen] = useState(false)
 
-  const science = niche.scienceLayer as
-    | {
-        neurochemicals?: string[]
-        nlpPatterns?: string[]
-        cognitiveBiases?: string[]
-        whyItWorks?: string
-      }
-    | undefined
-
+  const science = niche.scienceLayer
   if (!science) return null
 
   const { neurochemicals = [], nlpPatterns = [], cognitiveBiases = [], whyItWorks } = science

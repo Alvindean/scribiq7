@@ -75,7 +75,7 @@ export default function PersonaCollabBuilder({
     <div className="space-y-16">
       {/* ── Section A: Pre-built Bands ── */}
       <div>
-        <h3 className="font-display text-xl font-bold text-[#E8E8F0] mb-6">Pre-built Bands</h3>
+        <h3 className="font-sans text-xl font-semibold tracking-tight text-[#E8E8F0] mb-6">Pre-built Bands</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {collaborations.map((collab) => {
             const bandName = collab.name ?? collab.id
@@ -89,7 +89,7 @@ export default function PersonaCollabBuilder({
                 className="bg-surface border border-white/5 rounded-xl p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/10"
               >
                 {/* Band name */}
-                <h4 className="font-display text-base font-bold text-[#E8E8F0] leading-tight">
+                <h4 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] leading-tight">
                   {bandName}
                 </h4>
 
@@ -147,7 +147,7 @@ export default function PersonaCollabBuilder({
 
       {/* ── Section B: Custom Builder ── */}
       <div>
-        <h3 className="font-display text-xl font-bold text-[#E8E8F0] mb-2">Custom Builder</h3>
+        <h3 className="font-sans text-xl font-semibold tracking-tight text-[#E8E8F0] mb-2">Custom Builder</h3>
         <p className="font-sans text-sm text-[#C8C8DC] mb-6">
           Select 2–3 personas to combine their voices into a custom band.
         </p>

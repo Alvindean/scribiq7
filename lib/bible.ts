@@ -14,6 +14,24 @@ export interface Science {
   [key: string]: unknown
 }
 
+export interface NicheFormula {
+  name: string
+  description: string
+}
+
+export interface NicheLegendaryExample {
+  title: string
+  era: string
+  lesson: string
+}
+
+export interface NicheScienceLayer {
+  neurochemicals?: string[]
+  nlpPatterns?: string[]
+  cognitiveBiases?: string[]
+  whyItWorks?: string
+}
+
 export interface Niche {
   id: string
   name: string
@@ -22,7 +40,25 @@ export interface Niche {
   rules: string[]
   toneNotes?: string
   keywords?: string[]
-  [key: string]: unknown
+  coreFormulas?: NicheFormula[]
+  legendaryExamples?: NicheLegendaryExample[]
+  relatedNiches?: string[]
+  mediums?: string[]
+  era?: string
+  tonePalette?: string[]
+  scienceLayer?: NicheScienceLayer
+}
+
+export interface PersonaFamousExample {
+  writer?: string
+  work?: string
+  signatureQuote?: string
+}
+
+export interface PersonaScienceLayer {
+  neurochemical?: string
+  emotionalTriggers?: string[]
+  bestFor?: string[]
 }
 
 export interface Persona {
@@ -33,7 +69,13 @@ export interface Persona {
   writingStyle: string
   forbiddenPhrases?: string[]
   signaturePhrases?: string[]
-  [key: string]: unknown
+  corePromise?: string
+  famousExample?: PersonaFamousExample
+  scienceLayer?: PersonaScienceLayer
+  hybridsWith?: string[]
+  oppositePersona?: string
+  breakTechnique?: string
+  genreExpressions?: Record<string, string>
 }
 
 export interface Hook {
@@ -43,7 +85,6 @@ export interface Hook {
   template: string
   example?: string
   notes?: string
-  [key: string]: unknown
 }
 
 export interface Era {
@@ -52,15 +93,23 @@ export interface Era {
   period: string
   characteristics: string[]
   influencedBy?: string[]
-  [key: string]: unknown
+  dominantStyle?: string
+  keyFigures?: string[]
+  legendaryWorks?: string[]
+  whatSurvived?: string
+  modernEquivalent?: string
 }
 
 export interface Interaction {
   id: string
   type: string
+  title?: string
   description: string
+  sourceNiche?: string
+  targetNiche?: string
+  strength?: number
   examples?: string[]
-  [key: string]: unknown
+  practicalApplication?: string
 }
 
 export interface Collaboration {
@@ -69,7 +118,6 @@ export interface Collaboration {
   personas: string[]
   dynamic: string
   outputStyle?: string
-  [key: string]: unknown
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────────

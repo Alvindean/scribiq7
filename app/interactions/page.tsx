@@ -1,16 +1,18 @@
-import { getInteractions } from '@/lib/bible'
-import type { Interaction } from '@/lib/bible'
+import Link from 'next/link'
+import { getInteractions, getNiches } from '@/lib/bible'
+import type { Interaction, Niche } from '@/lib/bible'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 
-// Extended interaction type
-interface InteractionFull extends Interaction {
-  sourceNiche?: string
-  targetNiche?: string
-  title?: string
-  strength?: number
-  practicalApplication?: string
+function lookupNicheId(name: string | undefined, niches: Niche[]): string | undefined {
+  if (!name) return undefined
+  const lower = name.toLowerCase()
+  return (
+    niches.find((n) => n.name.toLowerCase() === lower)?.id ??
+    niches.find((n) => n.name.toLowerCase().startsWith(lower))?.id ??
+    niches.find((n) => lower.startsWith(n.name.toLowerCase()))?.id
+  )
 }
 
 const TYPE_VARIANT: Record<string, 'amber' | 'indigo' | 'green' | 'red' | 'muted'> = {
@@ -37,7 +39,10 @@ function StrengthDots({ strength }: { strength: number }) {
 }
 
 export default async function InteractionsPage() {
-  const interactions = (await getInteractions()) as InteractionFull[]
+  const [interactions, niches] = await Promise.all([
+    getInteractions(),
+    getNiches(),
+  ])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-10">
@@ -51,7 +56,7 @@ export default async function InteractionsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {interactions.map((interaction) => (
           <div key={interaction.id} id={interaction.id} className="scroll-mt-24">
-            <InteractionCard interaction={interaction} />
+            <InteractionCard interaction={interaction} niches={niches} />
           </div>
         ))}
       </div>
@@ -59,7 +64,20 @@ export default async function InteractionsPage() {
   )
 }
 
-function InteractionCard({ interaction }: { interaction: InteractionFull }) {
+function InteractionCard({
+  interaction,
+  niches,
+}: {
+  interaction: Interaction
+  niches: Niche[]
+}) {
+  const sourceId = lookupNicheId(interaction.sourceNiche, niches)
+  const targetId = lookupNicheId(interaction.targetNiche, niches)
+  const generateHref = targetId
+    ? `/generate?niche=${targetId}&interaction=${interaction.id}`
+    : sourceId
+    ? `/generate?niche=${sourceId}&interaction=${interaction.id}`
+    : `/generate?interaction=${interaction.id}`
   const variant = TYPE_VARIANT[interaction.type] ?? 'muted'
   const typeLabel = interaction.type.replace(/-/g, ' ')
 
@@ -68,11 +86,19 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
       {/* Source → Target */}
       {(interaction.sourceNiche || interaction.targetNiche) && (
         <div className="flex items-center gap-2 flex-wrap">
-          {interaction.sourceNiche && (
-            <span className="text-xs font-sans font-semibold text-[#E8E8F0]/70">
-              {interaction.sourceNiche}
-            </span>
-          )}
+          {interaction.sourceNiche &&
+            (sourceId ? (
+              <Link
+                href={`/bible/${sourceId}`}
+                className="text-xs font-sans font-semibold text-[#E8E8F0]/85 hover:text-brand transition-colors"
+              >
+                {interaction.sourceNiche}
+              </Link>
+            ) : (
+              <span className="text-xs font-sans font-semibold text-[#E8E8F0]/85">
+                {interaction.sourceNiche}
+              </span>
+            ))}
           {interaction.sourceNiche && interaction.targetNiche && (
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-brand shrink-0">
               <path
@@ -84,11 +110,19 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
               />
             </svg>
           )}
-          {interaction.targetNiche && (
-            <span className="text-xs font-sans font-semibold text-[#E8E8F0]/70">
-              {interaction.targetNiche}
-            </span>
-          )}
+          {interaction.targetNiche &&
+            (targetId ? (
+              <Link
+                href={`/bible/${targetId}`}
+                className="text-xs font-sans font-semibold text-[#E8E8F0]/85 hover:text-brand transition-colors"
+              >
+                {interaction.targetNiche}
+              </Link>
+            ) : (
+              <span className="text-xs font-sans font-semibold text-[#E8E8F0]/85">
+                {interaction.targetNiche}
+              </span>
+            ))}
           <Badge variant={variant} size="sm" className="capitalize">
             {typeLabel}
           </Badge>
@@ -106,7 +140,7 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
       {/* Title + Description */}
       <div className="space-y-2">
         {interaction.title && (
-          <h3 className="font-display text-base font-bold text-[#E8E8F0] leading-snug">
+          <h3 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] leading-snug">
             {interaction.title}
           </h3>
         )}
@@ -131,7 +165,7 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
 
       {/* Practical Application */}
       {interaction.practicalApplication && (
-        <div className="mt-auto pt-3 border-t border-white/5 space-y-1">
+        <div className="pt-3 border-t border-white/5 space-y-1">
           <p className="text-xs font-sans font-semibold uppercase tracking-[0.1em] text-[#8888A8]">
             Apply It
           </p>
@@ -140,6 +174,19 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
           </p>
         </div>
       )}
+
+      {/* Generate CTA */}
+      <div className="mt-auto pt-1">
+        <Link
+          href={generateHref}
+          className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-brand hover:text-[#E6C25A] transition-colors"
+        >
+          Steal this transfer in the generator
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      </div>
     </Card>
   )
 }

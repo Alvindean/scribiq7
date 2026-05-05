@@ -1,8 +1,20 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getNiche, getNiches } from '@/lib/bible'
 import { Badge } from '@/components/ui/Badge'
 import { SciencePanel } from '@/components/SciencePanel'
+
+export async function generateMetadata({
+  params,
+}: NicheDetailPageProps): Promise<Metadata> {
+  const niche = await getNiche(params.nicheId)
+  if (!niche) return { title: 'Niche not found — Scribe IQ' }
+  return {
+    title: `${niche.name} — Scribe IQ`,
+    description: niche.description.slice(0, 160),
+  }
+}
 
 export async function generateStaticParams() {
   return []
@@ -21,15 +33,9 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
 
   const allNiches = await getNiches()
 
-  // Typed extras
-  const coreFormulas = niche.coreFormulas as { name: string; description: string }[] | undefined
-  const legendaryExamples = niche.legendaryExamples as { title: string; era: string; lesson: string }[] | undefined
-  const relatedNicheIds = niche.relatedNiches as string[] | undefined
-  const mediums = niche.mediums as string[] | undefined
-  const era = niche.era as string | undefined
-
-  const relatedNiches = relatedNicheIds
-    ? allNiches.filter((n) => relatedNicheIds.includes(n.id))
+  const { coreFormulas, legendaryExamples, mediums, era } = niche
+  const relatedNiches = niche.relatedNiches
+    ? allNiches.filter((n) => niche.relatedNiches!.includes(n.id))
     : []
 
   // Rules split into do / never
@@ -184,10 +190,6 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
                         ))}
                       </ul>
                     </div>
-                  )}
-                  {neverRules.length === 0 && doRules.length > 0 && (
-                    // Only do rules — render full width
-                    null
                   )}
                 </div>
                 {/* Fallback: if no split render all rules */}

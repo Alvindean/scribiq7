@@ -6,7 +6,7 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { GeneratorForm } from '@/components/GeneratorForm'
 import { CopyOutput } from '@/components/CopyOutput'
 import { GenerateOptions } from '@/lib/claude'
-import type { Niche, Persona, Era, Hook, Collaboration } from '@/lib/bible'
+import type { Niche, Persona, Era, Hook, Collaboration, Interaction } from '@/lib/bible'
 
 async function streamGenerate(
   formData: GenerateOptions & { nicheId?: string; personaId?: string },
@@ -55,12 +55,23 @@ function GeneratePageInner() {
   const queryCollabId = searchParams.get('collab') ?? undefined
   const queryHookTypeId = searchParams.get('hookType') ?? undefined
   const queryPersonasMulti = searchParams.get('personas') ?? undefined
+  const queryInteractionId = searchParams.get('interaction') ?? undefined
+  const hasAnyQueryParam = Boolean(
+    queryNicheId ||
+      queryPersonaId ||
+      queryEraId ||
+      queryCollabId ||
+      queryHookTypeId ||
+      queryPersonasMulti ||
+      queryInteractionId,
+  )
 
-  const [niches, setNiches] = useState<Array<{ id: string; name: string }>>([])
-  const [personas, setPersonas] = useState<Array<{ id: string; name: string }>>([])
-  const [eras, setEras] = useState<Array<{ id: string; name: string; period: string }>>([])
+  const [niches, setNiches] = useState<Niche[]>([])
+  const [personas, setPersonas] = useState<Persona[]>([])
+  const [eras, setEras] = useState<Era[]>([])
   const [collabs, setCollabs] = useState<Collaboration[]>([])
   const [hooks, setHooks] = useState<Hook[]>([])
+  const [interactions, setInteractions] = useState<Interaction[]>([])
   const [referenceLoaded, setReferenceLoaded] = useState(false)
 
   const [content, setContent] = useState('')
@@ -77,18 +88,20 @@ function GeneratePageInner() {
   useEffect(() => {
     async function load() {
       try {
-        const [n, p, e, c, h] = await Promise.all([
+        const [n, p, e, c, h, i] = await Promise.all([
           fetch('/api/bible/niches').then((r) => r.json()).catch(() => []),
           fetch('/api/bible/personas').then((r) => r.json()).catch(() => []),
           fetch('/api/bible/eras').then((r) => r.json()).catch(() => []),
           fetch('/api/bible/collaborations').then((r) => r.json()).catch(() => []),
           fetch('/api/bible/hooks').then((r) => r.json()).catch(() => []),
+          fetch('/api/bible/interactions').then((r) => r.json()).catch(() => []),
         ])
         setNiches(n)
         setPersonas(p)
         setEras(e)
         setCollabs(c)
         setHooks(h)
+        setInteractions(i)
       } catch {
         // non-fatal — dropdowns will be empty
       } finally {
@@ -101,7 +114,17 @@ function GeneratePageInner() {
   // Compute initial form values from URL params + reference data
   const initialValues = useMemo(() => {
     const personaNameById = new Map(personas.map((p) => [p.id, p.name]))
+    const lookupNicheId = (raw?: string): string | undefined => {
+      if (!raw) return undefined
+      const lower = raw.toLowerCase()
+      return (
+        niches.find((n) => n.name.toLowerCase() === lower)?.id ??
+        niches.find((n) => n.name.toLowerCase().startsWith(lower))?.id ??
+        niches.find((n) => lower.startsWith(n.name.toLowerCase()))?.id
+      )
+    }
     let initialPersonaId: string | undefined = queryPersonaId
+    let initialNicheId: string | undefined = queryNicheId
     const customRulesParts: string[] = []
 
     // Resolve collab → personas + dynamic
@@ -144,22 +167,44 @@ function GeneratePageInner() {
       }
     }
 
+    if (queryInteractionId) {
+      const interaction = interactions.find((x) => x.id === queryInteractionId)
+      if (interaction) {
+        const targetId = lookupNicheId(interaction.targetNiche)
+        const sourceId = lookupNicheId(interaction.sourceNiche)
+        if (!initialNicheId && targetId) initialNicheId = targetId
+        else if (!initialNicheId && sourceId) initialNicheId = sourceId
+        const transferLine =
+          interaction.sourceNiche && interaction.targetNiche
+            ? `Cross-niche transfer — borrow from ${interaction.sourceNiche} into ${interaction.targetNiche}.`
+            : `Cross-niche transfer — ${interaction.title ?? interaction.type}.`
+        const desc = interaction.description ? ` ${interaction.description}` : ''
+        const apply = interaction.practicalApplication
+          ? ` How to apply: ${interaction.practicalApplication}`
+          : ''
+        customRulesParts.push(`${transferLine}${desc}${apply}`)
+      }
+    }
+
     return {
-      nicheId: queryNicheId,
+      nicheId: initialNicheId,
       personaId: initialPersonaId,
       eraId: queryEraId,
       customRules: customRulesParts.length > 0 ? customRulesParts.join('\n\n') : undefined,
     }
   }, [
     personas,
+    niches,
     collabs,
     hooks,
+    interactions,
     queryNicheId,
     queryPersonaId,
     queryEraId,
     queryCollabId,
     queryHookTypeId,
     queryPersonasMulti,
+    queryInteractionId,
   ])
 
   async function handleSubmit(
@@ -179,8 +224,8 @@ function GeneratePageInner() {
       setAppliedData({
         niche: formData.niche,
         persona: formData.persona,
-        nicheRules: (selectedNiche as unknown as Niche)?.rules?.slice(0, 3),
-        personaVoice: (selectedPersona as unknown as Persona)?.voiceCharacteristics?.slice(0, 3),
+        nicheRules: selectedNiche?.rules?.slice(0, 3),
+        personaVoice: selectedPersona?.voiceCharacteristics?.slice(0, 3),
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
@@ -212,6 +257,7 @@ function GeneratePageInner() {
               initialPersonaId={initialValues.personaId}
               initialEraId={initialValues.eraId}
               initialCustomRules={initialValues.customRules}
+              autoLoadSample={!hasAnyQueryParam}
               onSubmit={handleSubmit}
               isLoading={isLoading}
             />

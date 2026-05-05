@@ -1,46 +1,42 @@
 import type { Metadata } from 'next'
-import localFont from 'next/font/local'
+import { Playfair_Display, Inter, JetBrains_Mono } from 'next/font/google'
 import Link from 'next/link'
 import { MobileMenu } from '@/components/MobileMenu'
 import './globals.css'
 
-const playfairDisplay = localFont({
-  src: [
-    { path: '../public/fonts/display-regular.ttf', weight: '400', style: 'normal' },
-    { path: '../public/fonts/display-bold.ttf', weight: '700', style: 'normal' },
-  ],
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  style: ['normal', 'italic'],
   variable: '--font-display',
   display: 'swap',
 })
 
-const inter = localFont({
-  src: [
-    { path: '../public/fonts/sans-regular.ttf', weight: '400', style: 'normal' },
-    { path: '../public/fonts/sans-bold.ttf', weight: '700', style: 'normal' },
-  ],
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
 })
 
-const jetbrainsMono = localFont({
-  src: [
-    { path: '../public/fonts/mono-regular.ttf', weight: '400', style: 'normal' },
-  ],
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
   variable: '--font-mono',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'Scribe IQ — The Copywriting Bible',
+  title: 'Scribe IQ — Generate persuasive copy in 24 legendary voices',
   description:
-    'A dark-themed editorial copywriting bible and AI generation tool for crafting authoritative, persona-driven copy across niches.',
+    'AI copy generator grounded in 200 years of proven niches. 26 writing genres, 24 named voices (Ogilvy, Hopkins, Hemingway, Halbert), 28 hooks. Stream output in seconds.',
 }
 
 const navLinks = [
   { label: 'Bible', href: '/bible' },
   { label: 'Personas', href: '/personas' },
-  { label: 'Generate', href: '/generate' },
   { label: 'Hooks', href: '/hooks' },
+  { label: 'Generate', href: '/generate' },
   { label: 'Eras', href: '/eras' },
   { label: 'Interactions', href: '/interactions' },
 ]

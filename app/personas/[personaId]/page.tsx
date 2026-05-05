@@ -1,9 +1,22 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPersona } from '@/lib/bible'
 import { Badge } from '@/components/ui/Badge'
+
+export async function generateMetadata({
+  params,
+}: PersonaDetailPageProps): Promise<Metadata> {
+  const persona = await getPersona(params.personaId)
+  if (!persona) return { title: 'Persona not found — Scribe IQ' }
+  const subtitle = persona.corePromise ?? persona.writingStyle ?? ''
+  return {
+    title: `${persona.name} — Scribe IQ`,
+    description: subtitle.slice(0, 160),
+  }
+}
 
 interface PersonaDetailPageProps {
   params: { personaId: string }
@@ -52,22 +65,19 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
     notFound()
   }
 
-  const p = persona as Record<string, unknown>
   const badgeVariant = archetypeBadgeVariant[persona.archetype] ?? 'amber'
   const archetypeDisplayLabel = archetypeLabel[persona.archetype] ?? persona.archetype
   const borderClass = archetypeBorderClass[persona.archetype] ?? 'border-l-brand'
 
-  const corePromise = p.corePromise as string | undefined
-  const famousExample = p.famousExample as
-    | { writer?: string; work?: string; signatureQuote?: string }
-    | undefined
-  const scienceLayer = p.scienceLayer as
-    | { neurochemical?: string; emotionalTriggers?: string[]; bestFor?: string[] }
-    | undefined
-  const hybridsWith = p.hybridsWith as string[] | undefined
-  const oppositePersona = p.oppositePersona as string | undefined
-  const breakTechnique = p.breakTechnique as string | undefined
-  const genreExpressions = p.genreExpressions as Record<string, string> | undefined
+  const {
+    corePromise,
+    famousExample,
+    scienceLayer,
+    hybridsWith,
+    oppositePersona,
+    breakTechnique,
+    genreExpressions,
+  } = persona
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -106,7 +116,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
 
           {/* Voice Breakdown */}
           <div className="bg-surface border border-white/5 rounded-xl p-6">
-            <h2 className="font-display text-lg font-bold text-[#E8E8F0] mb-4">Voice Breakdown</h2>
+            <h2 className="font-sans text-lg font-semibold tracking-tight text-[#E8E8F0] mb-4">Voice Breakdown</h2>
             <div className="flex flex-wrap gap-2 mb-4">
               {persona.voiceCharacteristics.map((char, i) => (
                 <span
@@ -125,7 +135,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           {/* Signature Phrases */}
           {persona.signaturePhrases && persona.signaturePhrases.length > 0 && (
             <div className="bg-surface border border-white/5 rounded-xl p-6">
-              <h2 className="font-display text-lg font-bold text-[#E8E8F0] mb-4">Signature Phrases</h2>
+              <h2 className="font-sans text-lg font-semibold tracking-tight text-[#E8E8F0] mb-4">Signature Phrases</h2>
               <div className="space-y-3">
                 {persona.signaturePhrases.map((phrase, i) => (
                   <div key={i} className={`pl-4 border-l-2 ${borderClass}`}>
@@ -141,7 +151,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           {/* Never Does */}
           {persona.forbiddenPhrases && persona.forbiddenPhrases.length > 0 && (
             <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-6">
-              <h2 className="font-display text-lg font-bold text-[#E8E8F0] mb-4">Never Does</h2>
+              <h2 className="font-sans text-lg font-semibold tracking-tight text-[#E8E8F0] mb-4">Never Does</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {persona.forbiddenPhrases.map((phrase, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -156,7 +166,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           {/* Genre Expressions */}
           {genreExpressions && Object.keys(genreExpressions).length > 0 && (
             <div className="bg-surface border border-white/5 rounded-xl p-6">
-              <h2 className="font-display text-lg font-bold text-[#E8E8F0] mb-4">Genre Expressions</h2>
+              <h2 className="font-sans text-lg font-semibold tracking-tight text-[#E8E8F0] mb-4">Genre Expressions</h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm font-sans">
                   <thead>
@@ -184,7 +194,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
               <div className="flex items-start gap-3">
                 <span className="text-brand text-lg shrink-0 mt-0.5">✦</span>
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#E8E8F0] mb-2">Breaking Technique</h2>
+                  <h2 className="font-sans text-lg font-semibold tracking-tight text-[#E8E8F0] mb-2">Breaking Technique</h2>
                   <p className="font-sans text-sm text-[#C8C8DC] leading-relaxed">{breakTechnique}</p>
                 </div>
               </div>
@@ -198,7 +208,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           {/* Famous Example */}
           {famousExample && (
             <div className="bg-surface border border-white/5 rounded-xl p-6">
-              <h2 className="font-display text-base font-bold text-[#E8E8F0] mb-4">Famous Example</h2>
+              <h2 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] mb-4">Famous Example</h2>
               {famousExample.writer && (
                 <p className="font-sans text-sm font-semibold text-brand mb-0.5">{famousExample.writer}</p>
               )}
@@ -218,7 +228,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           {/* Science Layer */}
           {scienceLayer && (
             <div className="bg-surface border border-white/5 rounded-xl p-6">
-              <h2 className="font-display text-base font-bold text-[#E8E8F0] mb-4">Science Layer</h2>
+              <h2 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] mb-4">Science Layer</h2>
 
               {scienceLayer.neurochemical && (
                 <div className="mb-3">
@@ -261,7 +271,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           {/* Hybrids With */}
           {hybridsWith && hybridsWith.length > 0 && (
             <div className="bg-surface border border-white/5 rounded-xl p-6">
-              <h2 className="font-display text-base font-bold text-[#E8E8F0] mb-4">Hybrids With</h2>
+              <h2 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] mb-4">Hybrids With</h2>
               <div className="flex flex-wrap gap-2">
                 {hybridsWith.map((id) => (
                   <Link
@@ -279,7 +289,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           {/* Opposite Persona */}
           {oppositePersona && (
             <div className="bg-surface border border-white/5 rounded-xl p-6">
-              <h2 className="font-display text-base font-bold text-[#E8E8F0] mb-3">Opposite Persona</h2>
+              <h2 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] mb-3">Opposite Persona</h2>
               <Link
                 href={`/personas/${oppositePersona}`}
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 text-[#E8E8F0] text-sm font-sans border border-white/10 hover:border-red-400/40 hover:text-red-300 transition-colors"
