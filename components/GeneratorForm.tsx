@@ -16,6 +16,8 @@ interface GeneratorFormProps {
 const labelClass = 'block text-xs font-sans font-semibold uppercase tracking-[0.12em] text-[#8888A8] mb-1.5'
 const inputClass =
   'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-sans text-[#E8E8F0] placeholder-[#8888A8]/60 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/30 transition-colors'
+const selectClass = cn(inputClass, 'bg-surface cursor-pointer')
+const optionClass = 'bg-surface text-[#E8E8F0]'
 
 export function GeneratorForm({ niches, personas, eras, onSubmit, isLoading }: GeneratorFormProps) {
   const [topic, setTopic] = useState('')
@@ -74,16 +76,16 @@ export function GeneratorForm({ niches, personas, eras, onSubmit, isLoading }: G
           </label>
           <select
             id="niche"
-            className={cn(inputClass, 'cursor-pointer')}
+            className={selectClass}
             value={nicheId}
             onChange={(e) => setNicheId(e.target.value)}
             required
           >
-            <option value="" disabled>
+            <option value="" disabled className={optionClass}>
               Select niche
             </option>
             {niches.map((n) => (
-              <option key={n.id} value={n.id}>
+              <option key={n.id} value={n.id} className={optionClass}>
                 {n.name}
               </option>
             ))}
@@ -96,16 +98,16 @@ export function GeneratorForm({ niches, personas, eras, onSubmit, isLoading }: G
           </label>
           <select
             id="persona"
-            className={cn(inputClass, 'cursor-pointer')}
+            className={selectClass}
             value={personaId}
             onChange={(e) => setPersonaId(e.target.value)}
             required
           >
-            <option value="" disabled>
+            <option value="" disabled className={optionClass}>
               Select persona
             </option>
             {personas.map((p) => (
-              <option key={p.id} value={p.id}>
+              <option key={p.id} value={p.id} className={optionClass}>
                 {p.name}
               </option>
             ))}
@@ -136,13 +138,13 @@ export function GeneratorForm({ niches, personas, eras, onSubmit, isLoading }: G
         </label>
         <select
           id="eraInfluence"
-          className={cn(inputClass, 'cursor-pointer')}
+          className={selectClass}
           value={eraInfluence}
           onChange={(e) => setEraInfluence(e.target.value)}
         >
-          <option value="">No era influence</option>
+          <option value="" className={optionClass}>No era influence</option>
           {eras.map((era) => (
-            <option key={era.id} value={era.id}>
+            <option key={era.id} value={era.id} className={optionClass}>
               {era.name} ({era.period})
             </option>
           ))}
