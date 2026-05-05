@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { GeneratorForm } from '@/components/GeneratorForm'
 import { CopyOutput } from '@/components/CopyOutput'
@@ -61,6 +62,8 @@ export default function GeneratePage() {
 }
 
 function GeneratePageInner() {
+  const { data: authSession } = useSession()
+  const isSignedIn = Boolean(authSession?.user)
   const searchParams = useSearchParams()
   const queryNicheId = searchParams.get('niche') ?? undefined
   const queryPersonaId = searchParams.get('persona') ?? undefined
@@ -89,8 +92,50 @@ function GeneratePageInner() {
   const [customVoice, setCustomVoice] = useState<CustomVoice | null>(null)
 
   useEffect(() => {
-    setCustomVoice(loadCustomVoice())
-  }, [])
+    let cancelled = false
+    async function load() {
+      if (isSignedIn) {
+        try {
+          const res = await fetch('/api/brand-voice')
+          if (res.ok) {
+            const data = (await res.json()) as {
+              voices?: Array<{
+                id: string
+                name: string
+                writingStyle: string
+                voiceCharacteristics: string[]
+                signaturePhrases: string[]
+                forbiddenPhrases: string[]
+                notes?: string | null
+                updatedAt?: string
+              }>
+            }
+            const v = data.voices?.[0]
+            if (v && !cancelled) {
+              setCustomVoice({
+                id: v.id,
+                name: v.name,
+                writingStyle: v.writingStyle,
+                voiceCharacteristics: v.voiceCharacteristics ?? [],
+                signaturePhrases: v.signaturePhrases ?? [],
+                forbiddenPhrases: v.forbiddenPhrases ?? [],
+                notes: v.notes ?? undefined,
+                savedAt: v.updatedAt ? new Date(v.updatedAt).getTime() : Date.now(),
+              })
+              return
+            }
+          }
+        } catch {
+          /* fall through to localStorage */
+        }
+      }
+      if (!cancelled) setCustomVoice(loadCustomVoice())
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [isSignedIn])
 
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -291,24 +336,51 @@ function GeneratePageInner() {
       })
       lastSubmittedRef.current = { formData, nicheRules, personaVoice }
 
-      // Auto-save to library — but skip if the stream encoded a mid-stream
-      // error sentinel into the body
+      // Auto-save: skip mid-stream error sentinels
       const trimmed = collected.trim()
       const isError = /\[Error:/i.test(trimmed)
       if (trimmed.length > 0 && !isError) {
-        const entry = saveEntry({
-          topic: formData.topic,
-          niche: formData.niche,
-          persona: formData.persona,
-          targetAudience: formData.targetAudience,
-          eraInfluence: formData.eraInfluence,
-          toneNotes: formData.toneNotes,
-          customRules: formData.customRules,
-          nicheId: formData.nicheId,
-          personaId: formData.personaId,
-          content: collected,
-        })
-        setSavedEntryId(entry.id)
+        if (isSignedIn) {
+          // Server-side: persist to per-user library
+          try {
+            const res = await fetch('/api/library', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                topic: formData.topic,
+                niche: formData.niche,
+                persona: formData.persona,
+                targetAudience: formData.targetAudience,
+                eraInfluence: formData.eraInfluence,
+                toneNotes: formData.toneNotes,
+                customRules: formData.customRules,
+                nicheId: formData.nicheId,
+                personaId: formData.personaId,
+                content: collected,
+              }),
+            })
+            if (res.ok) {
+              const data = (await res.json()) as { entry?: { id: string } }
+              if (data.entry?.id) setSavedEntryId(data.entry.id)
+            }
+          } catch {
+            // fall through silently — generation still succeeded
+          }
+        } else {
+          const entry = saveEntry({
+            topic: formData.topic,
+            niche: formData.niche,
+            persona: formData.persona,
+            targetAudience: formData.targetAudience,
+            eraInfluence: formData.eraInfluence,
+            toneNotes: formData.toneNotes,
+            customRules: formData.customRules,
+            nicheId: formData.nicheId,
+            personaId: formData.personaId,
+            content: collected,
+          })
+          setSavedEntryId(entry.id)
+        }
       } else if (isError) {
         const match = trimmed.match(/\[Error:\s*([^\]]+)\]/i)
         setError(match?.[1]?.trim() || 'Generation failed mid-stream.')

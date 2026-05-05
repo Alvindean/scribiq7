@@ -2,9 +2,42 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Badge } from '@/components/ui/Badge'
 import { listEntries, deleteEntry, type LibraryEntry } from '@/lib/library'
+
+interface ServerEntry {
+  id: string
+  topic: string
+  niche: string
+  persona: string
+  targetAudience: string
+  eraInfluence: string | null
+  toneNotes: string | null
+  customRules: string | null
+  nicheId: string | null
+  personaId: string | null
+  content: string
+  createdAt: string
+}
+
+function serverToLibrary(e: ServerEntry): LibraryEntry {
+  return {
+    id: e.id,
+    savedAt: new Date(e.createdAt).getTime(),
+    topic: e.topic,
+    niche: e.niche,
+    persona: e.persona,
+    targetAudience: e.targetAudience,
+    eraInfluence: e.eraInfluence ?? undefined,
+    toneNotes: e.toneNotes ?? undefined,
+    customRules: e.customRules ?? undefined,
+    nicheId: e.nicheId ?? undefined,
+    personaId: e.personaId ?? undefined,
+    content: e.content,
+  }
+}
 
 function formatRelative(ts: number): string {
   const diff = Date.now() - ts
@@ -19,17 +52,46 @@ function formatRelative(ts: number): string {
 }
 
 export default function LibraryPage() {
+  const { data: authSession, status: authStatus } = useSession()
+  const isSignedIn = Boolean(authSession?.user)
   const [entries, setEntries] = useState<LibraryEntry[] | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
-    setEntries(listEntries())
-  }, [])
+    if (authStatus === 'loading') return
+    let cancelled = false
+    async function load() {
+      if (isSignedIn) {
+        try {
+          const res = await fetch('/api/library')
+          if (res.ok) {
+            const data = (await res.json()) as { entries?: ServerEntry[] }
+            if (!cancelled) {
+              setEntries((data.entries ?? []).map(serverToLibrary))
+              return
+            }
+          }
+        } catch {
+          /* fall through */
+        }
+      }
+      if (!cancelled) setEntries(listEntries())
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [isSignedIn, authStatus])
 
-  function handleDelete(id: string) {
-    deleteEntry(id)
-    setEntries(listEntries())
+  async function handleDelete(id: string) {
+    if (isSignedIn) {
+      await fetch(`/api/library/${id}`, { method: 'DELETE' }).catch(() => null)
+      setEntries((prev) => (prev ?? []).filter((e) => e.id !== id))
+    } else {
+      deleteEntry(id)
+      setEntries(listEntries())
+    }
     if (openId === id) setOpenId(null)
   }
 

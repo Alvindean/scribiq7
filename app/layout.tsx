@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Playfair_Display, Inter, JetBrains_Mono } from 'next/font/google'
 import Link from 'next/link'
 import { MobileMenu } from '@/components/MobileMenu'
+import { Providers } from '@/components/Providers'
+import { AuthBadge } from '@/components/AuthBadge'
 import './globals.css'
 
 const playfairDisplay = Playfair_Display({
@@ -70,6 +72,7 @@ function Nav() {
             >
               {generateLink.label}
             </Link>
+            <AuthBadge />
           </div>
 
           <MobileMenu links={[...navLinks, generateLink]} />
@@ -90,8 +93,10 @@ export default function RootLayout({
       className={`dark ${playfairDisplay.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-sans bg-canvas text-[#E8E8F0] antialiased">
-        <Nav />
-        <main className="min-h-screen pt-16">{children}</main>
+        <Providers>
+          <Nav />
+          <main className="min-h-screen pt-16">{children}</main>
+        </Providers>
       </body>
     </html>
   )

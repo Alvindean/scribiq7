@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -15,6 +16,8 @@ import {
 const MIN_SAMPLE_LEN = 80
 
 export default function BrandVoicePage() {
+  const { data: authSession, status: authStatus } = useSession()
+  const isSignedIn = Boolean(authSession?.user)
   const [samples, setSamples] = useState<string[]>(['', '', ''])
   const [voice, setVoice] = useState<CustomVoice | null>(null)
   const [loading, setLoading] = useState(false)
@@ -22,9 +25,46 @@ export default function BrandVoicePage() {
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    setVoice(loadCustomVoice())
-    setHydrated(true)
-  }, [])
+    if (authStatus === 'loading') return
+    let cancelled = false
+    async function load() {
+      if (isSignedIn) {
+        try {
+          const res = await fetch('/api/brand-voice')
+          if (res.ok) {
+            const data = (await res.json()) as {
+              voices?: Array<Omit<CustomVoice, 'savedAt'> & { updatedAt?: string }>
+            }
+            const v = data.voices?.[0]
+            if (!cancelled && v) {
+              setVoice({
+                id: v.id,
+                name: v.name,
+                writingStyle: v.writingStyle,
+                voiceCharacteristics: v.voiceCharacteristics ?? [],
+                signaturePhrases: v.signaturePhrases ?? [],
+                forbiddenPhrases: v.forbiddenPhrases ?? [],
+                notes: v.notes ?? undefined,
+                savedAt: v.updatedAt ? new Date(v.updatedAt).getTime() : Date.now(),
+              })
+              setHydrated(true)
+              return
+            }
+          }
+        } catch {
+          /* fall through */
+        }
+      }
+      if (!cancelled) {
+        setVoice(loadCustomVoice())
+        setHydrated(true)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [isSignedIn, authStatus])
 
   const filledSamples = samples.filter((s) => s.trim().length >= MIN_SAMPLE_LEN)
   const canExtract = filledSamples.length >= 2 && !loading
@@ -42,15 +82,42 @@ export default function BrandVoicePage() {
       if (!res.ok) {
         throw new Error(data.error ?? `Request failed (${res.status})`)
       }
-      const saved = saveCustomVoice({
-        name: data.name,
-        writingStyle: data.writingStyle,
-        voiceCharacteristics: data.voiceCharacteristics ?? [],
-        signaturePhrases: data.signaturePhrases ?? [],
-        forbiddenPhrases: data.forbiddenPhrases ?? [],
-        notes: data.notes,
-      })
-      setVoice(saved)
+
+      const payload = {
+        name: data.name as string,
+        writingStyle: data.writingStyle as string,
+        voiceCharacteristics: (data.voiceCharacteristics ?? []) as string[],
+        signaturePhrases: (data.signaturePhrases ?? []) as string[],
+        forbiddenPhrases: (data.forbiddenPhrases ?? []) as string[],
+        notes: data.notes as string | undefined,
+      }
+
+      if (isSignedIn) {
+        // Persist to DB; replaces existing single free-tier voice
+        const saveRes = await fetch('/api/brand-voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        const saveData = await saveRes.json().catch(() => ({}))
+        if (!saveRes.ok) {
+          throw new Error(saveData.error ?? 'Failed to save voice.')
+        }
+        const v = saveData.voice as Omit<CustomVoice, 'savedAt'> & { updatedAt?: string }
+        setVoice({
+          id: v.id,
+          name: v.name,
+          writingStyle: v.writingStyle,
+          voiceCharacteristics: v.voiceCharacteristics ?? [],
+          signaturePhrases: v.signaturePhrases ?? [],
+          forbiddenPhrases: v.forbiddenPhrases ?? [],
+          notes: v.notes ?? undefined,
+          savedAt: v.updatedAt ? new Date(v.updatedAt).getTime() : Date.now(),
+        })
+      } else {
+        const saved = saveCustomVoice(payload)
+        setVoice(saved)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Extraction failed.')
     } finally {
@@ -58,8 +125,16 @@ export default function BrandVoicePage() {
     }
   }
 
-  function handleClear() {
-    clearCustomVoice()
+  async function handleClear() {
+    if (isSignedIn && voice?.id && voice.id !== 'custom') {
+      try {
+        await fetch(`/api/brand-voice/${voice.id}`, { method: 'DELETE' })
+      } catch {
+        /* ignore */
+      }
+    } else {
+      clearCustomVoice()
+    }
     setVoice(null)
     setSamples(['', '', ''])
   }

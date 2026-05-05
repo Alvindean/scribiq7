@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateCopy, GenerateOptions } from '@/lib/claude'
 import { getNiche, getPersona } from '@/lib/bible'
+import { auth, isAuthConfigured } from '@/lib/auth'
 
 export const runtime = 'nodejs'
 
@@ -91,8 +92,19 @@ export async function POST(req: NextRequest) {
   const nicheData = nicheId ? ((await getNiche(nicheId)) ?? undefined) : undefined
   const personaData = personaId ? ((await getPersona(personaId)) ?? undefined) : undefined
 
-  const length =
+  let length: 'short' | 'medium' | 'long' =
     body.length === 'short' || body.length === 'long' ? body.length : 'medium'
+
+  // Plan-gating: if auth is configured and the user is signed in on the free
+  // plan, downgrade `long` to `medium` rather than refusing — silent so
+  // anonymous and free users get a usable result.
+  if (isAuthConfigured() && length === 'long') {
+    const session = await auth()
+    const plan = session?.user?.plan
+    if (plan && plan !== 'pro') {
+      length = 'medium'
+    }
+  }
 
   const options: GenerateOptions = {
     niche,
