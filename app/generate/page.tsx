@@ -103,9 +103,9 @@ export default function GeneratePage() {
         subtitle="AI-powered. Bible-informed. Persona-driven."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[26fr_74fr] gap-8 items-start">
         {/* Left: Form */}
-        <div className="lg:col-span-1 bg-surface border border-white/5 rounded-2xl p-5 lg:sticky lg:top-20">
+        <div className="bg-surface border border-white/5 rounded-2xl p-6 lg:sticky lg:top-20">
           <GeneratorForm
             niches={niches}
             personas={personas}
@@ -116,7 +116,7 @@ export default function GeneratePage() {
         </div>
 
         {/* Right: Output */}
-        <div className="lg:col-span-4 space-y-4">
+        <div className="space-y-4">
           <CopyOutput content={content} isLoading={isLoading} error={error} />
 
           {/* Science Overlay */}
