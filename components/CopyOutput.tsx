@@ -34,7 +34,7 @@ export function CopyOutput({ content, isLoading, error }: CopyOutputProps) {
   const isEmpty = !content && !isLoading && !error
 
   return (
-    <div className="relative flex flex-col bg-surface border border-white/5 rounded-xl overflow-hidden min-h-[400px]">
+    <div className="relative flex flex-col bg-surface border border-white/5 rounded-xl overflow-hidden min-h-[560px]">
       {/* Header bar */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
         <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function CopyOutput({ content, isLoading, error }: CopyOutputProps) {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 p-5">
+      <div className="flex-1 px-6 py-7 sm:px-8 sm:py-8">
         {error ? (
           <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
             <svg
@@ -148,10 +148,10 @@ export function CopyOutput({ content, isLoading, error }: CopyOutputProps) {
             </p>
           </div>
         ) : (
-          <pre className="font-mono text-sm text-[#E8E8F0] leading-7 whitespace-pre-wrap break-words">
+          <pre className="font-sans text-[15px] text-[#E8E8F0] leading-[1.7] whitespace-pre-wrap break-words max-w-[68ch] mx-auto">
             {content}
             {isLoading && (
-              <span className="inline-block w-0.5 h-4 bg-brand align-middle ml-0.5 animate-pulse" />
+              <span className="inline-block w-0.5 h-5 bg-brand align-middle ml-0.5 animate-pulse" />
             )}
           </pre>
         )}

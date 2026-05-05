@@ -96,16 +96,16 @@ export default function GeneratePage() {
   const showOverlay = !isLoading && appliedData && content
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-10">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-10">
       <SectionHeader
         label="Scribe IQ"
         title="Generate Copy"
         subtitle="AI-powered. Bible-informed. Persona-driven."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
         {/* Left: Form */}
-        <div className="bg-surface border border-white/5 rounded-2xl p-6">
+        <div className="lg:col-span-2 bg-surface border border-white/5 rounded-2xl p-6 lg:sticky lg:top-20">
           <GeneratorForm
             niches={niches}
             personas={personas}
@@ -116,7 +116,7 @@ export default function GeneratePage() {
         </div>
 
         {/* Right: Output */}
-        <div className="space-y-4">
+        <div className="lg:col-span-3 space-y-4">
           <CopyOutput content={content} isLoading={isLoading} error={error} />
 
           {/* Science Overlay */}
