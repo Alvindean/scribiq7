@@ -35,12 +35,10 @@ export const metadata: Metadata = {
 const navLinks = [
   { label: 'Bible', href: '/bible' },
   { label: 'Personas', href: '/personas' },
-  { label: 'Hooks', href: '/hooks' },
-  { label: 'Generate', href: '/generate' },
+  { label: 'Brand Voice', href: '/brand-voice' },
   { label: 'Library', href: '/library' },
-  { label: 'Eras', href: '/eras' },
-  { label: 'Interactions', href: '/interactions' },
 ]
+const generateLink = { label: 'Generate', href: '/generate' }
 
 function Nav() {
   return (
@@ -61,14 +59,20 @@ function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-[#8888A8] hover:text-brand transition-colors duration-150"
+                className="text-sm text-[#8888A8] hover:text-brand transition-colors duration-150 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-4 focus-visible:ring-offset-canvas"
               >
                 {link.label}
               </Link>
             ))}
+            <Link
+              href={generateLink.href}
+              className="text-sm font-semibold px-4 py-1.5 rounded-lg bg-brand/10 text-brand border border-brand/30 hover:bg-brand/15 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+            >
+              {generateLink.label}
+            </Link>
           </div>
 
-          <MobileMenu links={navLinks} />
+          <MobileMenu links={[...navLinks, generateLink]} />
         </div>
       </div>
     </nav>

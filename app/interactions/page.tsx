@@ -140,7 +140,7 @@ function InteractionCard({
       {/* Title + Description */}
       <div className="space-y-2">
         {interaction.title && (
-          <h3 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] leading-snug">
+          <h3 className="font-display text-lg font-semibold tracking-tight text-[#E8E8F0] leading-snug">
             {interaction.title}
           </h3>
         )}

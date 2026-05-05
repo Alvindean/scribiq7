@@ -30,7 +30,7 @@ export function MobileMenu({ links }: MobileMenuProps) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="md:hidden p-2 text-[#8888A8] hover:text-brand transition-colors"
+        className="md:hidden p-2 text-[#8888A8] hover:text-brand transition-colors rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
         aria-label={open ? 'Close menu' : 'Open menu'}
         aria-expanded={open}
         aria-controls="mobile-menu"
@@ -60,29 +60,37 @@ export function MobileMenu({ links }: MobileMenuProps) {
       </button>
 
       {open && (
-        <div
-          id="mobile-menu"
-          className="md:hidden absolute top-16 left-0 right-0 bg-canvas/95 backdrop-blur-md border-b border-white/5"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-1">
-            {links.map((link) => {
-              const active = pathname === link.href || pathname.startsWith(link.href + '/')
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                    active
-                      ? 'text-brand bg-white/5'
-                      : 'text-[#8888A8] hover:text-brand hover:bg-white/5'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
+        <>
+          {/* Click-outside backdrop */}
+          <div
+            aria-hidden="true"
+            onClick={() => setOpen(false)}
+            className="md:hidden fixed inset-0 top-16 bg-canvas/40 z-40"
+          />
+          <div
+            id="mobile-menu"
+            className="md:hidden absolute top-16 left-0 right-0 bg-canvas/95 backdrop-blur-md border-b border-white/5 z-50"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-1">
+              {links.map((link) => {
+                const active = pathname === link.href || pathname.startsWith(link.href + '/')
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`px-3 py-2.5 rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 ${
+                      active
+                        ? 'text-brand bg-white/5'
+                        : 'text-[#8888A8] hover:text-brand hover:bg-white/5'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </>
   )

@@ -167,7 +167,7 @@ export function GeneratorForm({
           <button
             type="button"
             onClick={clearAll}
-            className="text-xs font-sans text-[#8888A8] hover:text-brand transition-colors shrink-0"
+            className="text-xs font-sans text-[#8888A8] hover:text-brand transition-colors shrink-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
           >
             Clear
           </button>
@@ -180,7 +180,7 @@ export function GeneratorForm({
           <button
             type="button"
             onClick={loadSample}
-            className="text-xs font-sans text-brand hover:text-[#E6C25A] transition-colors inline-flex items-center gap-1"
+            className="text-xs font-sans text-brand hover:text-[#E6C25A] transition-colors inline-flex items-center gap-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             Load sample
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -286,7 +286,7 @@ export function GeneratorForm({
                 type="button"
                 onClick={() => setLength(opt)}
                 className={cn(
-                  'text-xs font-sans py-2 rounded-lg capitalize transition-colors',
+                  'text-xs font-sans py-2 rounded-lg capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60',
                   active
                     ? 'bg-brand/15 text-brand font-semibold'
                     : 'text-[#C8C8DC] hover:text-[#E8E8F0]',

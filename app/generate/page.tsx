@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect, useMemo } from 'react'
+import { Suspense, useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { SectionHeader } from '@/components/ui/SectionHeader'
@@ -13,12 +13,14 @@ import type { Niche, Persona, Era, Hook, Collaboration, Interaction } from '@/li
 
 async function streamGenerate(
   formData: GenerateOptions & { nicheId?: string; personaId?: string },
-  setContent: React.Dispatch<React.SetStateAction<string>>
+  setContent: React.Dispatch<React.SetStateAction<string>>,
+  signal: AbortSignal,
 ) {
   const res = await fetch('/api/generate', {
     method: 'POST',
     body: JSON.stringify(formData),
     headers: { 'Content-Type': 'application/json' },
+    signal,
   })
 
   if (!res.ok) {
@@ -30,6 +32,14 @@ async function streamGenerate(
   const decoder = new TextDecoder()
   let done = false
   while (!done) {
+    if (signal.aborted) {
+      try {
+        await reader.cancel()
+      } catch {
+        /* ignore */
+      }
+      throw new DOMException('aborted', 'AbortError')
+    }
     const { value, done: doneReading } = await reader.read()
     done = doneReading
     if (value) setContent((prev) => prev + decoder.decode(value))
@@ -216,10 +226,25 @@ function GeneratePageInner() {
   ])
 
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      abortRef.current?.abort()
+    }
+  }, [])
 
   async function handleSubmit(
     formData: GenerateOptions & { nicheId?: string; personaId?: string }
   ) {
+    // Cancel any in-flight stream from a previous submit
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setContent('')
     setError(undefined)
     setAppliedData(null)
@@ -228,6 +253,7 @@ function GeneratePageInner() {
 
     let collected = ''
     const onChunk: React.Dispatch<React.SetStateAction<string>> = (updater) => {
+      if (!mountedRef.current) return
       setContent((prev) => {
         const next = typeof updater === 'function' ? (updater as (p: string) => string)(prev) : updater
         collected = next
@@ -236,9 +262,10 @@ function GeneratePageInner() {
     }
 
     try {
-      await streamGenerate(formData, onChunk)
+      await streamGenerate(formData, onChunk, controller.signal)
 
-      // Build science overlay data
+      if (!mountedRef.current) return
+
       const selectedNiche = niches.find((n) => n.id === formData.nicheId)
       const selectedPersona = personas.find((p) => p.id === formData.personaId)
       setAppliedData({
@@ -248,8 +275,11 @@ function GeneratePageInner() {
         personaVoice: selectedPersona?.voiceCharacteristics?.slice(0, 3),
       })
 
-      // Auto-save to library
-      if (collected.trim().length > 0) {
+      // Auto-save to library — but skip if the stream encoded a mid-stream
+      // error sentinel into the body
+      const trimmed = collected.trim()
+      const isError = /\[Error:/i.test(trimmed)
+      if (trimmed.length > 0 && !isError) {
         const entry = saveEntry({
           topic: formData.topic,
           niche: formData.niche,
@@ -263,11 +293,16 @@ function GeneratePageInner() {
           content: collected,
         })
         setSavedEntryId(entry.id)
+      } else if (isError) {
+        const match = trimmed.match(/\[Error:\s*([^\]]+)\]/i)
+        setError(match?.[1]?.trim() || 'Generation failed mid-stream.')
       }
     } catch (err) {
+      if ((err as DOMException)?.name === 'AbortError') return
+      if (!mountedRef.current) return
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
-      setIsLoading(false)
+      if (mountedRef.current) setIsLoading(false)
     }
   }
 

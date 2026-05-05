@@ -12,6 +12,46 @@ const stats = [
   { value: '8', label: 'Persona Bands' },
 ]
 
+const EXAMPLES: Array<{
+  persona: string
+  niche: string
+  opener: string
+  gloss: string
+}> = [
+  {
+    persona: 'David Ogilvy',
+    niche: 'Email Marketing',
+    opener:
+      'I have read your last six months of release notes. There is a quiet pattern in them I think you would want to know about before your next investor call.',
+    gloss:
+      'Authority by specificity. No exclamation, no urgency. The reply is yes because the writer has done work before asking.',
+  },
+  {
+    persona: 'Gary Halbert',
+    niche: 'Direct Response Advertising',
+    opener:
+      'Three founders this week told me your support inbox is the reason they will not renew. I would not believe me either — so here are their names.',
+    gloss:
+      'Halbert\'s pattern: pre-empt the dismissal in the same sentence as the claim. Names create the only reply path.',
+  },
+  {
+    persona: 'Claude Hopkins',
+    niche: 'Long-Form Sales Pages',
+    opener:
+      'Last quarter you spent $14,200 on tools your team opens fewer than four times a month. We measured it. Reply "audit" and I will send you the file.',
+    gloss:
+      'Hopkins lives in numbers and proof. The CTA is one word because the work has already been done for the reader.',
+  },
+  {
+    persona: 'Eugene Schwartz',
+    niche: 'Long-Form Sales Pages',
+    opener:
+      'You did not start this company to spend Tuesday afternoons reviewing onboarding video drafts. You started it to ship the thing nobody else can ship.',
+    gloss:
+      'Schwartz: meet the prospect inside their existing thought, then redirect. The opener is a mirror, not a pitch.',
+  },
+]
+
 export default async function HomePage() {
   const [niches, personas, interactions] = await Promise.all([
     getNiches(),
@@ -46,25 +86,27 @@ export default async function HomePage() {
           <div className="w-[600px] h-[600px] rounded-full bg-brand/5 blur-[120px]" />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-          <p className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-brand">
+        <div className="relative z-10 max-w-4xl mx-auto space-y-7">
+          <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-brand">
+            <span className="font-display italic font-bold normal-case tracking-normal text-sm">Scribe IQ</span>
+            <span className="mx-2 text-[#8888A8]">·</span>
             The Copywriting Intelligence System
           </p>
 
-          <h1 className="font-display font-bold text-6xl sm:text-7xl md:text-8xl text-[#E8E8F0] leading-none tracking-tight">
-            SCRIBE IQ
+          <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl text-[#E8E8F0] leading-[1.05] tracking-tight">
+            Write sales copy in <span className="italic text-brand">24 legendary voices.</span>
           </h1>
 
           <p className="font-sans text-lg sm:text-xl text-[#C8C8DC] max-w-2xl mx-auto leading-relaxed">
-            Write copy in the voice of Ogilvy, Halbert, or Hopkins — across 26 niches grounded in 200 years of what works. Streaming output in seconds. No signup.
+            Pick a master voice — Ogilvy, Halbert, Hopkins, Schwartz — name your topic, watch the copy stream out. Free. No signup. Saved to your browser.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Link
               href="/generate"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-sans font-semibold text-base bg-gradient-to-r from-brand to-[#E6C25A] text-[#0A0A0F] hover:from-[#D4B357] hover:to-[#EDD070] shadow-lg shadow-brand/20 transition-all duration-150"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-sans font-semibold text-base bg-gradient-to-r from-brand to-[#E6C25A] text-[#0A0A0F] hover:from-[#D4B357] hover:to-[#EDD070] shadow-lg shadow-brand/20 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
             >
-              Start Generating
+              Try it now
               <svg
                 className="ml-2"
                 width="16"
@@ -81,10 +123,68 @@ export default async function HomePage() {
               </svg>
             </Link>
             <Link
-              href="/bible"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-sans font-semibold text-base border border-brand/40 text-brand hover:bg-brand/10 hover:border-brand/60 transition-all duration-150"
+              href="#examples"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-sans font-semibold text-base border border-brand/40 text-brand hover:bg-brand/10 hover:border-brand/60 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
             >
-              Browse the Bible
+              See example output
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Examples ─────────────────────────────────────────────────────── */}
+      <section id="examples" className="border-y border-white/5 bg-surface/30 scroll-mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-10">
+          <div className="max-w-3xl">
+            <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.18em] text-brand mb-3">
+              Same brief, different voice
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-[#E8E8F0] leading-tight tracking-tight">
+              Watch the bible bend the same idea four ways.
+            </h2>
+            <p className="mt-4 font-sans text-base text-[#C8C8DC] leading-relaxed">
+              Topic: <em className="not-italic text-[#E8E8F0]">a one-line cold email opener that gets a reply.</em> Audience: skeptical SaaS founders. Each card below is real output from the generator with one variable changed: the persona.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {EXAMPLES.map((ex) => (
+              <article
+                key={ex.persona}
+                className="bg-surface border border-white/5 rounded-2xl p-6 flex flex-col gap-4"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-sans font-semibold uppercase tracking-[0.14em] text-[#8888A8]">
+                      Persona
+                    </p>
+                    <p className="font-display text-lg font-semibold text-[#E8E8F0] tracking-tight mt-0.5">
+                      {ex.persona}
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-sans px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[#C8C8DC]">
+                    {ex.niche}
+                  </span>
+                </div>
+                <p className="font-display italic text-lg text-[#E8E8F0] leading-relaxed">
+                  &ldquo;{ex.opener}&rdquo;
+                </p>
+                <p className="font-sans text-sm text-[#C8C8DC] leading-relaxed">
+                  {ex.gloss}
+                </p>
+              </article>
+            ))}
+          </div>
+
+          <div className="pt-4">
+            <Link
+              href="/generate"
+              className="inline-flex items-center gap-2 font-sans text-sm font-semibold text-brand hover:text-[#E6C25A] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 rounded"
+            >
+              Try the generator with a sample loaded
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 7h10M7 2l5 5-5 5" />
+              </svg>
             </Link>
           </div>
         </div>

@@ -49,6 +49,7 @@ export function CopyOutput({ content, isLoading, error }: CopyOutputProps) {
             onClick={handleCopy}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-all duration-150',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
               copied
                 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                 : 'bg-white/5 text-[#8888A8] border border-white/10 hover:text-[#E8E8F0] hover:border-white/20'

@@ -38,10 +38,8 @@ export function NicheCard({ niche, featured = false }: NicheCardProps) {
         {/* Name */}
         <h3
           className={cn(
-            'text-[#E8E8F0] leading-snug mb-2 group-hover:text-brand transition-colors duration-150 tracking-tight',
-            featured
-              ? 'font-display font-bold text-xl'
-              : 'font-sans font-semibold text-lg'
+            'font-display text-[#E8E8F0] leading-snug mb-2 group-hover:text-brand transition-colors duration-150 tracking-tight',
+            featured ? 'text-2xl font-bold' : 'text-xl font-semibold'
           )}
         >
           {niche.name}

@@ -102,7 +102,7 @@ function HookCard({ hook }: { hook: Hook }) {
     <Card hover className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-sans text-base font-semibold tracking-tight text-[#E8E8F0] leading-snug">
+        <h3 className="font-display text-lg font-semibold tracking-tight text-[#E8E8F0] leading-snug">
           {(hook as Hook & { name?: string }).name ?? hook.id}
         </h3>
         <Badge variant={variant} size="sm" className="shrink-0 capitalize">

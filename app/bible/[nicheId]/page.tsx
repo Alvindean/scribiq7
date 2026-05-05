@@ -71,7 +71,7 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
           {niche.description}
         </p>
         {niche.toneNotes && (
-          <p className="mt-4 font-sans italic text-sm text-brand border-l-2 border-brand/40 pl-4 max-w-3xl leading-relaxed">
+          <p className="mt-4 font-display italic text-base text-brand border-l-2 border-brand/40 pl-4 max-w-3xl leading-relaxed">
             {niche.toneNotes}
           </p>
         )}

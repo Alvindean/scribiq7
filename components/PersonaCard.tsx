@@ -73,7 +73,7 @@ export function PersonaCard({ persona, compact = false }: PersonaCardProps) {
       >
         {/* Top: name + archetype badge */}
         <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="font-sans text-lg font-semibold text-[#E8E8F0] leading-tight tracking-tight">
+          <h3 className="font-display text-xl font-semibold text-[#E8E8F0] leading-tight tracking-tight">
             {persona.name}
           </h3>
           <Badge variant={badgeVariant} size="sm" className="shrink-0 mt-0.5">
@@ -82,7 +82,7 @@ export function PersonaCard({ persona, compact = false }: PersonaCardProps) {
         </div>
 
         {/* Writing style — 2-line clamp */}
-        <p className="font-sans text-sm text-[#C8C8DC] italic leading-relaxed line-clamp-2 mb-3">
+        <p className="font-display italic text-base text-[#C8C8DC] leading-relaxed line-clamp-2 mb-3">
           {persona.writingStyle}
         </p>
 
@@ -102,7 +102,7 @@ export function PersonaCard({ persona, compact = false }: PersonaCardProps) {
         {!compact && persona.signaturePhrases && persona.signaturePhrases.length > 0 && (
           <div className="space-y-1 border-t border-white/5 pt-3">
             {persona.signaturePhrases.slice(0, 2).map((phrase, i) => (
-              <p key={i} className="font-sans italic text-xs text-[#C8C8DC]/85 leading-relaxed">
+              <p key={i} className="font-display italic text-sm text-[#C8C8DC]/90 leading-relaxed">
                 &ldquo;{phrase}&rdquo;
               </p>
             ))}
