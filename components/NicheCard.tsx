@@ -47,7 +47,7 @@ export function NicheCard({ niche, featured = false }: NicheCardProps) {
         </h3>
 
         {/* Description — 2 lines truncated */}
-        <p className="font-sans text-sm text-[#8888A8] leading-relaxed line-clamp-2 flex-1 mb-4">
+        <p className="font-sans text-sm text-[#C8C8DC] leading-relaxed line-clamp-2 flex-1 mb-4">
           {niche.description}
         </p>
 
@@ -57,7 +57,7 @@ export function NicheCard({ niche, featured = false }: NicheCardProps) {
             {keywords.map((kw) => (
               <span
                 key={kw}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono bg-white/5 text-[#8888A8] border border-white/8"
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono bg-white/5 text-[#8888A8] border border-white/10"
               >
                 {kw}
               </span>

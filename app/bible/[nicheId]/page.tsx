@@ -61,11 +61,11 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
         <h1 className="font-display font-bold text-5xl md:text-6xl text-[#E8E8F0] mb-4 leading-tight">
           {niche.name}
         </h1>
-        <p className="font-sans text-lg text-[#8888A8] max-w-3xl leading-relaxed">
+        <p className="font-sans text-lg text-[#C8C8DC] max-w-3xl leading-relaxed">
           {niche.description}
         </p>
         {niche.toneNotes && (
-          <p className="mt-4 font-mono text-sm text-brand border-l-2 border-brand/40 pl-4">
+          <p className="mt-4 font-sans italic text-sm text-brand border-l-2 border-brand/40 pl-4 max-w-3xl leading-relaxed">
             {niche.toneNotes}
           </p>
         )}
@@ -109,7 +109,7 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
                         </svg>
                       </summary>
                       <div className="px-5 pb-4 border-t border-white/5">
-                        <p className="font-sans text-sm text-[#8888A8] leading-relaxed pt-3">
+                        <p className="font-sans text-sm text-[#C8C8DC] leading-relaxed pt-3">
                           {formula.description}
                         </p>
                       </div>
@@ -137,7 +137,7 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
                           </h3>
                           <Badge variant="muted" size="sm">{ex.era}</Badge>
                         </div>
-                        <p className="font-sans text-xs text-[#8888A8] leading-relaxed">
+                        <p className="font-sans text-xs text-[#C8C8DC] leading-relaxed">
                           <span className="text-brand font-medium">Lesson: </span>
                           {ex.lesson}
                         </p>
@@ -162,7 +162,7 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
                       </p>
                       <ul className="space-y-2">
                         {doRules.map((rule, i) => (
-                          <li key={i} className="flex gap-2 font-sans text-sm text-[#8888A8]">
+                          <li key={i} className="flex gap-2 font-sans text-sm text-[#C8C8DC]">
                             <span className="text-emerald-400 flex-shrink-0 mt-0.5">✓</span>
                             {rule}
                           </li>
@@ -177,7 +177,7 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
                       </p>
                       <ul className="space-y-2">
                         {neverRules.map((rule, i) => (
-                          <li key={i} className="flex gap-2 font-sans text-sm text-[#8888A8]">
+                          <li key={i} className="flex gap-2 font-sans text-sm text-[#C8C8DC]">
                             <span className="text-red-400 flex-shrink-0 mt-0.5">✗</span>
                             {rule}
                           </li>
@@ -194,7 +194,7 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
                 {neverRules.length === 0 && doRules.length === 0 && (
                   <ul className="space-y-2">
                     {niche.rules.map((rule, i) => (
-                      <li key={i} className="flex gap-2 font-sans text-sm text-[#8888A8]">
+                      <li key={i} className="flex gap-2 font-sans text-sm text-[#C8C8DC]">
                         <span className="text-brand flex-shrink-0">•</span>
                         {rule}
                       </li>
@@ -243,7 +243,7 @@ export default async function NicheDetailPage({ params }: NicheDetailPageProps) 
                   {niche.keywords.map((kw) => (
                     <span
                       key={kw}
-                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono bg-white/5 text-[#8888A8] border border-white/8"
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono bg-white/5 text-[#8888A8] border border-white/10"
                     >
                       {kw}
                     </span>

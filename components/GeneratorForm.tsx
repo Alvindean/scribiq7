@@ -12,9 +12,15 @@ interface GeneratorFormProps {
   initialNicheId?: string
   initialPersonaId?: string
   initialEraId?: string
+  initialCustomRules?: string
   onSubmit: (formData: GenerateOptions & { nicheId?: string; personaId?: string }) => void
   isLoading: boolean
 }
+
+const SAMPLE_TOPIC =
+  'A 12-second decision that compounded into a $40K mistake — and the simple test I now use to avoid it'
+const SAMPLE_AUDIENCE =
+  'First-time investors aged 28–40, skeptical of traditional advice'
 
 const labelClass = 'block text-xs font-sans font-semibold uppercase tracking-[0.12em] text-[#8888A8] mb-1.5'
 const inputClass =
@@ -29,6 +35,7 @@ export function GeneratorForm({
   initialNicheId,
   initialPersonaId,
   initialEraId,
+  initialCustomRules,
   onSubmit,
   isLoading,
 }: GeneratorFormProps) {
@@ -38,7 +45,24 @@ export function GeneratorForm({
   const [targetAudience, setTargetAudience] = useState('')
   const [eraInfluence, setEraInfluence] = useState(initialEraId ?? '')
   const [toneNotes, setToneNotes] = useState('')
-  const [customRules, setCustomRules] = useState('')
+  const [customRules, setCustomRules] = useState(initialCustomRules ?? '')
+
+  function loadSample() {
+    setTopic(SAMPLE_TOPIC)
+    setTargetAudience(SAMPLE_AUDIENCE)
+    if (!nicheId) {
+      const preferred =
+        niches.find((n) => n.id === 'email-marketing') ?? niches[0]
+      if (preferred) setNicheId(preferred.id)
+    }
+    if (!personaId) {
+      const preferred =
+        personas.find((p) => p.id === 'david-ogilvy') ??
+        personas.find((p) => /ogilvy/i.test(p.name)) ??
+        personas[0]
+      if (preferred) setPersonaId(preferred.id)
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -64,6 +88,23 @@ export function GeneratorForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Sample loader */}
+      <div className="flex items-center justify-between -mt-1 mb-1">
+        <p className="text-[11px] font-sans text-[#8888A8] uppercase tracking-[0.12em]">
+          New here?
+        </p>
+        <button
+          type="button"
+          onClick={loadSample}
+          className="text-xs font-sans text-brand hover:text-[#E6C25A] transition-colors inline-flex items-center gap-1"
+        >
+          Load sample
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 5.5h7M6 2.5l3 3-3 3" />
+          </svg>
+        </button>
+      </div>
+
       {/* Topic */}
       <div>
         <label htmlFor="topic" className={labelClass}>

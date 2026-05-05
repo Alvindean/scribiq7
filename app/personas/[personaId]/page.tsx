@@ -93,7 +93,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
           </Badge>
         </div>
         {corePromise && (
-          <p className="font-sans text-lg text-[#8888A8] italic leading-relaxed max-w-2xl">
+          <p className="font-sans text-lg text-[#C8C8DC] italic leading-relaxed max-w-2xl">
             {corePromise}
           </p>
         )}
@@ -111,13 +111,13 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
               {persona.voiceCharacteristics.map((char, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/5 text-[#8888A8] text-xs font-sans border border-white/8"
+                  className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/5 text-[#8888A8] text-xs font-sans border border-white/10"
                 >
                   {char}
                 </span>
               ))}
             </div>
-            <p className="font-sans text-sm text-[#8888A8] leading-relaxed">
+            <p className="font-sans text-sm text-[#C8C8DC] leading-relaxed">
               {persona.writingStyle}
             </p>
           </div>
@@ -129,7 +129,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
               <div className="space-y-3">
                 {persona.signaturePhrases.map((phrase, i) => (
                   <div key={i} className={`pl-4 border-l-2 ${borderClass}`}>
-                    <p className="font-mono text-sm text-[#E8E8F0]/80 leading-relaxed">
+                    <p className="font-sans italic text-base text-[#C8C8DC] leading-relaxed">
                       &ldquo;{phrase}&rdquo;
                     </p>
                   </div>
@@ -167,9 +167,9 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
                   </thead>
                   <tbody>
                     {Object.entries(genreExpressions).map(([genre, expression]) => (
-                      <tr key={genre} className="border-b border-white/3">
+                      <tr key={genre} className="border-b border-white/5">
                         <td className="py-2.5 pr-6 text-brand font-medium capitalize">{genre}</td>
-                        <td className="py-2.5 text-[#8888A8] leading-relaxed">{expression}</td>
+                        <td className="py-2.5 text-[#C8C8DC] leading-relaxed">{expression}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -185,7 +185,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
                 <span className="text-brand text-lg shrink-0 mt-0.5">✦</span>
                 <div>
                   <h2 className="font-display text-lg font-bold text-[#E8E8F0] mb-2">Breaking Technique</h2>
-                  <p className="font-sans text-sm text-[#8888A8] leading-relaxed">{breakTechnique}</p>
+                  <p className="font-sans text-sm text-[#C8C8DC] leading-relaxed">{breakTechnique}</p>
                 </div>
               </div>
             </div>
@@ -207,7 +207,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
               )}
               {famousExample.signatureQuote && (
                 <blockquote className={`pl-4 border-l-2 ${borderClass}`}>
-                  <p className="font-sans text-sm text-[#E8E8F0]/80 italic leading-relaxed">
+                  <p className="font-sans text-sm text-[#C8C8DC] italic leading-relaxed">
                     &ldquo;{famousExample.signatureQuote}&rdquo;
                   </p>
                 </blockquote>
@@ -233,7 +233,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
                     {scienceLayer.emotionalTriggers.map((trigger, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/5 text-[#8888A8] text-xs font-sans border border-white/8"
+                        className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/5 text-[#8888A8] text-xs font-sans border border-white/10"
                       >
                         {trigger}
                       </span>
@@ -267,7 +267,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
                   <Link
                     key={id}
                     href={`/personas/${id}`}
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/5 text-[#E8E8F0] text-sm font-sans border border-white/8 hover:border-brand/40 hover:text-brand transition-colors capitalize"
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/5 text-[#E8E8F0] text-sm font-sans border border-white/10 hover:border-brand/40 hover:text-brand transition-colors capitalize"
                   >
                     {id.replace(/-/g, ' ').replace(/\bthe\b/g, 'The')}
                   </Link>
@@ -282,7 +282,7 @@ export default async function PersonaDetailPage({ params }: PersonaDetailPagePro
               <h2 className="font-display text-base font-bold text-[#E8E8F0] mb-3">Opposite Persona</h2>
               <Link
                 href={`/personas/${oppositePersona}`}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 text-[#E8E8F0] text-sm font-sans border border-white/8 hover:border-red-400/40 hover:text-red-300 transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 text-[#E8E8F0] text-sm font-sans border border-white/10 hover:border-red-400/40 hover:text-red-300 transition-colors"
               >
                 <span className="text-red-400">↔</span>
                 {oppositePersona.replace(/-/g, ' ').replace(/\bthe\b/g, 'The')}

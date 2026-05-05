@@ -224,7 +224,11 @@ export default function PersonaCollabBuilder({
 
         {/* Build button */}
         <Link
-          href="/generate"
+          href={
+            selectedIds.length >= 2
+              ? `/generate?personas=${selectedIds.join(',')}`
+              : '/generate'
+          }
           className={cn(
             'inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-sans font-semibold text-sm transition-all duration-150',
             selectedPersonas.length >= 2

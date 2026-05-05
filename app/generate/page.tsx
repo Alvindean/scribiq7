@@ -1,12 +1,12 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { GeneratorForm } from '@/components/GeneratorForm'
 import { CopyOutput } from '@/components/CopyOutput'
 import { GenerateOptions } from '@/lib/claude'
-import type { Niche, Persona, Era } from '@/lib/bible'
+import type { Niche, Persona, Era, Hook, Collaboration } from '@/lib/bible'
 
 async function streamGenerate(
   formData: GenerateOptions & { nicheId?: string; personaId?: string },
@@ -49,13 +49,19 @@ export default function GeneratePage() {
 
 function GeneratePageInner() {
   const searchParams = useSearchParams()
-  const initialNicheId = searchParams.get('niche') ?? undefined
-  const initialPersonaId = searchParams.get('persona') ?? undefined
-  const initialEraId = searchParams.get('era') ?? undefined
+  const queryNicheId = searchParams.get('niche') ?? undefined
+  const queryPersonaId = searchParams.get('persona') ?? undefined
+  const queryEraId = searchParams.get('era') ?? undefined
+  const queryCollabId = searchParams.get('collab') ?? undefined
+  const queryHookTypeId = searchParams.get('hookType') ?? undefined
+  const queryPersonasMulti = searchParams.get('personas') ?? undefined
 
   const [niches, setNiches] = useState<Array<{ id: string; name: string }>>([])
   const [personas, setPersonas] = useState<Array<{ id: string; name: string }>>([])
   const [eras, setEras] = useState<Array<{ id: string; name: string; period: string }>>([])
+  const [collabs, setCollabs] = useState<Collaboration[]>([])
+  const [hooks, setHooks] = useState<Hook[]>([])
+  const [referenceLoaded, setReferenceLoaded] = useState(false)
 
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -67,24 +73,96 @@ function GeneratePageInner() {
     personaVoice?: string[]
   } | null>(null)
 
-  // Load dropdown data
+  // Load dropdown + reference data
   useEffect(() => {
     async function load() {
       try {
-        const [n, p, e] = await Promise.all([
+        const [n, p, e, c, h] = await Promise.all([
           fetch('/api/bible/niches').then((r) => r.json()).catch(() => []),
           fetch('/api/bible/personas').then((r) => r.json()).catch(() => []),
           fetch('/api/bible/eras').then((r) => r.json()).catch(() => []),
+          fetch('/api/bible/collaborations').then((r) => r.json()).catch(() => []),
+          fetch('/api/bible/hooks').then((r) => r.json()).catch(() => []),
         ])
         setNiches(n)
         setPersonas(p)
         setEras(e)
+        setCollabs(c)
+        setHooks(h)
       } catch {
         // non-fatal — dropdowns will be empty
+      } finally {
+        setReferenceLoaded(true)
       }
     }
     load()
   }, [])
+
+  // Compute initial form values from URL params + reference data
+  const initialValues = useMemo(() => {
+    const personaNameById = new Map(personas.map((p) => [p.id, p.name]))
+    let initialPersonaId: string | undefined = queryPersonaId
+    const customRulesParts: string[] = []
+
+    // Resolve collab → personas + dynamic
+    if (queryCollabId) {
+      const collab = collabs.find((c) => c.id === queryCollabId)
+      if (collab && collab.personas.length > 0) {
+        if (!initialPersonaId) initialPersonaId = collab.personas[0]
+        const others = collab.personas
+          .slice(1)
+          .map((id) => personaNameById.get(id) ?? id)
+          .filter(Boolean)
+        const collabName = (collab as { name?: string }).name ?? collab.id
+        const others_str = others.length > 0 ? ` Blend with: ${others.join(' + ')}.` : ''
+        const dyn = collab.dynamic ? ` ${collab.dynamic}` : ''
+        const out = (collab as { outputStyle?: string }).outputStyle
+          ? ` Output style: ${(collab as { outputStyle: string }).outputStyle}`
+          : ''
+        customRulesParts.push(`Persona Band — ${collabName}.${others_str}${dyn}${out}`)
+      }
+    } else if (queryPersonasMulti) {
+      const ids = queryPersonasMulti.split(',').filter(Boolean)
+      if (ids.length > 0) {
+        if (!initialPersonaId) initialPersonaId = ids[0]
+        if (ids.length > 1) {
+          const others = ids
+            .slice(1)
+            .map((id) => personaNameById.get(id) ?? id)
+            .join(' + ')
+          customRulesParts.push(`Custom voice blend — combine the lead persona with: ${others}.`)
+        }
+      }
+    }
+
+    // Resolve hookType
+    if (queryHookTypeId) {
+      const hook = hooks.find((h) => h.id === queryHookTypeId)
+      if (hook) {
+        const hookName = (hook as Hook & { name?: string }).name ?? hook.id
+        const tmpl = hook.template ? ` Template: "${hook.template}"` : ''
+        const ex = hook.example ? ` Example: "${hook.example}"` : ''
+        customRulesParts.push(`Open with this hook — ${hookName} (${hook.type}).${tmpl}${ex}`)
+      }
+    }
+
+    return {
+      nicheId: queryNicheId,
+      personaId: initialPersonaId,
+      eraId: queryEraId,
+      customRules: customRulesParts.length > 0 ? customRulesParts.join('\n\n') : undefined,
+    }
+  }, [
+    personas,
+    collabs,
+    hooks,
+    queryNicheId,
+    queryPersonaId,
+    queryEraId,
+    queryCollabId,
+    queryHookTypeId,
+    queryPersonasMulti,
+  ])
 
   async function handleSubmit(
     formData: GenerateOptions & { nicheId?: string; personaId?: string }
@@ -126,16 +204,27 @@ function GeneratePageInner() {
       <div className="grid grid-cols-1 lg:grid-cols-[26fr_74fr] gap-8 items-start">
         {/* Left: Form */}
         <div className="bg-surface border border-white/5 rounded-2xl p-6 lg:sticky lg:top-20">
-          <GeneratorForm
-            niches={niches}
-            personas={personas}
-            eras={eras}
-            initialNicheId={initialNicheId}
-            initialPersonaId={initialPersonaId}
-            initialEraId={initialEraId}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-          />
+          {referenceLoaded ? (
+            <GeneratorForm
+              key={`form-${initialValues.nicheId ?? ''}-${initialValues.personaId ?? ''}-${initialValues.eraId ?? ''}`}
+              niches={niches}
+              personas={personas}
+              eras={eras}
+              initialNicheId={initialValues.nicheId}
+              initialPersonaId={initialValues.personaId}
+              initialEraId={initialValues.eraId}
+              initialCustomRules={initialValues.customRules}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+            />
+          ) : (
+            <div className="space-y-4">
+              <div className="h-10 w-full bg-white/5 rounded-xl animate-pulse" />
+              <div className="h-10 w-full bg-white/5 rounded-xl animate-pulse" />
+              <div className="h-10 w-full bg-white/5 rounded-xl animate-pulse" />
+              <div className="h-10 w-full bg-white/5 rounded-xl animate-pulse" />
+            </div>
+          )}
         </div>
 
         {/* Right: Output */}

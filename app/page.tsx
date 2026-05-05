@@ -23,6 +23,8 @@ export default async function HomePage() {
   const featuredPersonas = personas.slice(0, 6)
   const featuredInteractions = interactions.slice(0, 3)
 
+  const nicheIdByName = new Map(niches.map((n) => [n.name.toLowerCase(), n.id]))
+
   return (
     <div className="min-h-screen bg-canvas">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -44,8 +46,8 @@ export default async function HomePage() {
             SCRIBE IQ
           </h1>
 
-          <p className="font-sans text-lg sm:text-xl text-[#8888A8] max-w-2xl mx-auto leading-relaxed">
-            200 years of what works. 26 niches. 24 voices. The science of why.
+          <p className="font-sans text-lg sm:text-xl text-[#C8C8DC] max-w-2xl mx-auto leading-relaxed">
+            Generate persuasive copy in 24 legendary voices, grounded in 200 years of proven niches.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
@@ -159,7 +161,7 @@ export default async function HomePage() {
             {featuredPersonas.map((persona) => (
               <Link
                 key={persona.id}
-                href="/personas"
+                href={`/personas/${persona.id}`}
                 className="group flex-shrink-0 w-72 snap-start block"
               >
                 <div className="h-full bg-surface border border-white/5 rounded-xl p-5 hover:border-brand/30 transition-colors duration-200">
@@ -171,14 +173,14 @@ export default async function HomePage() {
                       {persona.archetype}
                     </Badge>
                   </div>
-                  <p className="font-sans text-xs text-[#8888A8] line-clamp-2 mb-3">
+                  <p className="font-sans text-xs text-[#C8C8DC] line-clamp-2 mb-3">
                     {persona.writingStyle}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {persona.voiceCharacteristics.slice(0, 2).map((vc) => (
                       <span
                         key={vc}
-                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-sans bg-white/5 text-[#8888A8] border border-white/8 line-clamp-1"
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-sans bg-white/5 text-[#8888A8] border border-white/10 line-clamp-1"
                       >
                         {vc.length > 30 ? vc.slice(0, 30) + '…' : vc}
                       </span>
@@ -221,8 +223,14 @@ export default async function HomePage() {
               targetNiche?: string
               type: string
             }
+            const sourceNicheId = ia.sourceNiche
+              ? nicheIdByName.get(ia.sourceNiche.toLowerCase())
+              : undefined
+            const cardHref = sourceNicheId
+              ? `/bible/${sourceNicheId}`
+              : `/interactions#${ia.id}`
             return (
-              <Link key={ia.id} href="/interactions" className="group block">
+              <Link key={ia.id} href={cardHref} className="group block">
                 <div className="h-full bg-surface border border-white/5 rounded-xl p-5 hover:border-brand/30 transition-colors duration-200">
                   <div className="flex items-center gap-2 mb-3 text-xs font-sans">
                     {ia.sourceNiche && (
@@ -239,7 +247,7 @@ export default async function HomePage() {
                   <h3 className="font-display font-bold text-base text-[#E8E8F0] group-hover:text-brand transition-colors mb-2 leading-snug">
                     {ia.title ?? ia.type}
                   </h3>
-                  <p className="font-sans text-xs text-[#8888A8] line-clamp-3 leading-relaxed">
+                  <p className="font-sans text-xs text-[#C8C8DC] line-clamp-3 leading-relaxed">
                     {ia.description}
                   </p>
                 </div>
@@ -258,7 +266,7 @@ export default async function HomePage() {
           <h2 className="font-display font-bold text-4xl md:text-5xl text-[#E8E8F0]">
             Generate Copy with AI
           </h2>
-          <p className="font-sans text-base text-[#8888A8] max-w-xl mx-auto leading-relaxed">
+          <p className="font-sans text-base text-[#C8C8DC] max-w-xl mx-auto leading-relaxed">
             Choose your niche, pick your persona, and let the bible guide the model to output that actually works.
           </p>
           <Link

@@ -82,7 +82,7 @@ export function PersonaCard({ persona, compact = false }: PersonaCardProps) {
         </div>
 
         {/* Writing style — 2-line clamp */}
-        <p className="font-sans text-sm text-[#8888A8] italic leading-relaxed line-clamp-2 mb-3">
+        <p className="font-sans text-sm text-[#C8C8DC] italic leading-relaxed line-clamp-2 mb-3">
           {persona.writingStyle}
         </p>
 
@@ -91,7 +91,7 @@ export function PersonaCard({ persona, compact = false }: PersonaCardProps) {
           {persona.voiceCharacteristics.slice(0, 3).map((char, i) => (
             <span
               key={i}
-              className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/5 text-[#8888A8] text-xs font-sans border border-white/8"
+              className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/5 text-[#8888A8] text-xs font-sans border border-white/10"
             >
               {char}
             </span>
@@ -102,7 +102,7 @@ export function PersonaCard({ persona, compact = false }: PersonaCardProps) {
         {!compact && persona.signaturePhrases && persona.signaturePhrases.length > 0 && (
           <div className="space-y-1 border-t border-white/5 pt-3">
             {persona.signaturePhrases.slice(0, 2).map((phrase, i) => (
-              <p key={i} className="font-mono text-xs text-[#8888A8]/80 leading-relaxed">
+              <p key={i} className="font-sans italic text-xs text-[#C8C8DC]/85 leading-relaxed">
                 &ldquo;{phrase}&rdquo;
               </p>
             ))}
