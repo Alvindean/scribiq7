@@ -148,7 +148,7 @@ export function CopyOutput({ content, isLoading, error }: CopyOutputProps) {
             </p>
           </div>
         ) : (
-          <pre className="font-sans text-[15px] text-[#E8E8F0] leading-[1.7] whitespace-pre-wrap break-words max-w-[68ch] mx-auto">
+          <pre className="font-sans text-[15px] text-[#E8E8F0] leading-[1.7] whitespace-pre-wrap break-words max-w-[78ch] mx-auto">
             {content}
             {isLoading && (
               <span className="inline-block w-0.5 h-5 bg-brand align-middle ml-0.5 animate-pulse" />

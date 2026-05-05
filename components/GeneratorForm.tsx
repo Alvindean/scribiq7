@@ -68,8 +68,8 @@ export function GeneratorForm({ niches, personas, eras, onSubmit, isLoading }: G
         />
       </div>
 
-      {/* Two-column: Niche + Persona */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Niche + Persona (stack on narrow form column) */}
+      <div className="space-y-5">
         <div>
           <label htmlFor="niche" className={labelClass}>
             Niche <span className="text-brand">*</span>
