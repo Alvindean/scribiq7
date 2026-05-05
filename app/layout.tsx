@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import Link from 'next/link'
+import { MobileMenu } from '@/components/MobileMenu'
 import './globals.css'
 
 const playfairDisplay = localFont({
@@ -70,22 +71,7 @@ function Nav() {
             ))}
           </div>
 
-          {/* Mobile hamburger placeholder */}
-          <button className="md:hidden p-2 text-[#8888A8] hover:text-brand transition-colors" aria-label="Open menu">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            >
-              <line x1="3" y1="5" x2="17" y2="5" />
-              <line x1="3" y1="10" x2="17" y2="10" />
-              <line x1="3" y1="15" x2="17" y2="15" />
-            </svg>
-          </button>
+          <MobileMenu links={navLinks} />
         </div>
       </div>
     </nav>
