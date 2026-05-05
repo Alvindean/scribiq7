@@ -226,6 +226,18 @@ function GeneratePageInner() {
   ])
 
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
+  const [shareState, setShareState] = useState<
+    | { kind: 'idle' }
+    | { kind: 'pending' }
+    | { kind: 'ready'; url: string; copied: boolean }
+    | { kind: 'unsupported' }
+    | { kind: 'error'; message: string }
+  >({ kind: 'idle' })
+  const lastSubmittedRef = useRef<{
+    formData: GenerateOptions & { nicheId?: string; personaId?: string }
+    nicheRules?: string[]
+    personaVoice?: string[]
+  } | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const mountedRef = useRef(true)
 
@@ -249,6 +261,7 @@ function GeneratePageInner() {
     setError(undefined)
     setAppliedData(null)
     setSavedEntryId(null)
+    setShareState({ kind: 'idle' })
     setIsLoading(true)
 
     let collected = ''
@@ -268,12 +281,15 @@ function GeneratePageInner() {
 
       const selectedNiche = niches.find((n) => n.id === formData.nicheId)
       const selectedPersona = personas.find((p) => p.id === formData.personaId)
+      const nicheRules = selectedNiche?.rules?.slice(0, 3)
+      const personaVoice = selectedPersona?.voiceCharacteristics?.slice(0, 3)
       setAppliedData({
         niche: formData.niche,
         persona: formData.persona,
-        nicheRules: selectedNiche?.rules?.slice(0, 3),
-        personaVoice: selectedPersona?.voiceCharacteristics?.slice(0, 3),
+        nicheRules,
+        personaVoice,
       })
+      lastSubmittedRef.current = { formData, nicheRules, personaVoice }
 
       // Auto-save to library — but skip if the stream encoded a mid-stream
       // error sentinel into the body
@@ -306,7 +322,53 @@ function GeneratePageInner() {
     }
   }
 
+  async function handleShare() {
+    const last = lastSubmittedRef.current
+    if (!last || !content) return
+    setShareState({ kind: 'pending' })
+    try {
+      const res = await fetch('/api/share/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: last.formData.topic,
+          niche: last.formData.niche,
+          persona: last.formData.persona,
+          targetAudience: last.formData.targetAudience,
+          eraInfluence: last.formData.eraInfluence,
+          content,
+          nicheRules: last.nicheRules,
+          personaVoice: last.personaVoice,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.status === 501) {
+        setShareState({ kind: 'unsupported' })
+        return
+      }
+      if (!res.ok) {
+        throw new Error(data.error ?? `Request failed (${res.status})`)
+      }
+      const url = `${window.location.origin}/c/${data.id}`
+      try {
+        await navigator.clipboard.writeText(url)
+        setShareState({ kind: 'ready', url, copied: true })
+        setTimeout(() => {
+          setShareState((s) => (s.kind === 'ready' ? { ...s, copied: false } : s))
+        }, 2200)
+      } catch {
+        setShareState({ kind: 'ready', url, copied: false })
+      }
+    } catch (err) {
+      setShareState({
+        kind: 'error',
+        message: err instanceof Error ? err.message : 'Share failed.',
+      })
+    }
+  }
+
   const showOverlay = !isLoading && appliedData && content
+  const canShare = !isLoading && Boolean(content) && !error
 
   return (
     <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-10">
@@ -372,6 +434,62 @@ function GeneratePageInner() {
         {/* Right: Output */}
         <div className="space-y-4">
           <CopyOutput content={content} isLoading={isLoading} error={error} />
+
+          {/* Share row */}
+          {canShare && (
+            <div className="bg-surface border border-white/5 rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex-1 min-w-0">
+                {shareState.kind === 'ready' ? (
+                  <p className="text-sm font-sans text-[#C8C8DC] truncate">
+                    <span className="text-brand font-semibold mr-2">
+                      {shareState.copied ? 'Copied:' : 'Share URL:'}
+                    </span>
+                    <a
+                      href={shareState.url}
+                      target="_blank"
+                      rel="noopener"
+                      className="text-[#E8E8F0] hover:text-brand underline-offset-2 hover:underline"
+                    >
+                      {shareState.url}
+                    </a>
+                  </p>
+                ) : shareState.kind === 'unsupported' ? (
+                  <p className="text-sm font-sans text-[#C8C8DC]">
+                    Public sharing isn't enabled yet — the site owner needs to add Vercel KV.
+                  </p>
+                ) : shareState.kind === 'error' ? (
+                  <p className="text-sm font-sans text-red-400">{shareState.message}</p>
+                ) : (
+                  <p className="text-sm font-sans text-[#C8C8DC]">
+                    Like this output? Get a public URL anyone can read — no signup required.
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleShare}
+                disabled={shareState.kind === 'pending'}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-sans text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
+                  shareState.kind === 'pending'
+                    ? 'bg-white/5 text-[#8888A8] cursor-wait'
+                    : 'bg-brand/10 text-brand border border-brand/30 hover:bg-brand/20'
+                }`}
+              >
+                {shareState.kind === 'pending'
+                  ? 'Sharing…'
+                  : shareState.kind === 'ready'
+                  ? shareState.copied
+                    ? 'Copied!'
+                    : 'Copy again'
+                  : 'Share'}
+                {shareState.kind !== 'pending' && shareState.kind !== 'ready' && (
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 4l3-3-3-3M12 1H6a4 4 0 00-4 4M4 9l-3 3 3 3M1 12h6a4 4 0 004-4" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Science Overlay */}
           {showOverlay && (
