@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { GeneratorForm } from '@/components/GeneratorForm'
 import { CopyOutput } from '@/components/CopyOutput'
@@ -33,6 +34,25 @@ async function streamGenerate(
 }
 
 export default function GeneratePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <div className="h-12 w-48 bg-white/5 rounded animate-pulse" />
+        </div>
+      }
+    >
+      <GeneratePageInner />
+    </Suspense>
+  )
+}
+
+function GeneratePageInner() {
+  const searchParams = useSearchParams()
+  const initialNicheId = searchParams.get('niche') ?? undefined
+  const initialPersonaId = searchParams.get('persona') ?? undefined
+  const initialEraId = searchParams.get('era') ?? undefined
+
   const [niches, setNiches] = useState<Array<{ id: string; name: string }>>([])
   const [personas, setPersonas] = useState<Array<{ id: string; name: string }>>([])
   const [eras, setEras] = useState<Array<{ id: string; name: string; period: string }>>([])
@@ -110,6 +130,9 @@ export default function GeneratePage() {
             niches={niches}
             personas={personas}
             eras={eras}
+            initialNicheId={initialNicheId}
+            initialPersonaId={initialPersonaId}
+            initialEraId={initialEraId}
             onSubmit={handleSubmit}
             isLoading={isLoading}
           />

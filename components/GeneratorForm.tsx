@@ -9,6 +9,9 @@ interface GeneratorFormProps {
   niches: Array<{ id: string; name: string }>
   personas: Array<{ id: string; name: string }>
   eras: Array<{ id: string; name: string; period: string }>
+  initialNicheId?: string
+  initialPersonaId?: string
+  initialEraId?: string
   onSubmit: (formData: GenerateOptions & { nicheId?: string; personaId?: string }) => void
   isLoading: boolean
 }
@@ -19,12 +22,21 @@ const inputClass =
 const selectClass = cn(inputClass, 'bg-surface cursor-pointer')
 const optionClass = 'bg-surface text-[#E8E8F0]'
 
-export function GeneratorForm({ niches, personas, eras, onSubmit, isLoading }: GeneratorFormProps) {
+export function GeneratorForm({
+  niches,
+  personas,
+  eras,
+  initialNicheId,
+  initialPersonaId,
+  initialEraId,
+  onSubmit,
+  isLoading,
+}: GeneratorFormProps) {
   const [topic, setTopic] = useState('')
-  const [nicheId, setNicheId] = useState('')
-  const [personaId, setPersonaId] = useState('')
+  const [nicheId, setNicheId] = useState(initialNicheId ?? '')
+  const [personaId, setPersonaId] = useState(initialPersonaId ?? '')
   const [targetAudience, setTargetAudience] = useState('')
-  const [eraInfluence, setEraInfluence] = useState('')
+  const [eraInfluence, setEraInfluence] = useState(initialEraId ?? '')
   const [toneNotes, setToneNotes] = useState('')
   const [customRules, setCustomRules] = useState('')
 
