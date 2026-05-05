@@ -38,6 +38,7 @@ export interface Persona {
 
 export interface Hook {
   id: string
+  name?: string
   type: string
   template: string
   example?: string
@@ -64,6 +65,7 @@ export interface Interaction {
 
 export interface Collaboration {
   id: string
+  name?: string
   personas: string[]
   dynamic: string
   outputStyle?: string

@@ -113,12 +113,10 @@ function GeneratePageInner() {
           .slice(1)
           .map((id) => personaNameById.get(id) ?? id)
           .filter(Boolean)
-        const collabName = (collab as { name?: string }).name ?? collab.id
+        const collabName = collab.name ?? collab.id
         const others_str = others.length > 0 ? ` Blend with: ${others.join(' + ')}.` : ''
         const dyn = collab.dynamic ? ` ${collab.dynamic}` : ''
-        const out = (collab as { outputStyle?: string }).outputStyle
-          ? ` Output style: ${(collab as { outputStyle: string }).outputStyle}`
-          : ''
+        const out = collab.outputStyle ? ` Output style: ${collab.outputStyle}` : ''
         customRulesParts.push(`Persona Band — ${collabName}.${others_str}${dyn}${out}`)
       }
     } else if (queryPersonasMulti) {
@@ -139,7 +137,7 @@ function GeneratePageInner() {
     if (queryHookTypeId) {
       const hook = hooks.find((h) => h.id === queryHookTypeId)
       if (hook) {
-        const hookName = (hook as Hook & { name?: string }).name ?? hook.id
+        const hookName = hook.name ?? hook.id
         const tmpl = hook.template ? ` Template: "${hook.template}"` : ''
         const ex = hook.example ? ` Example: "${hook.example}"` : ''
         customRulesParts.push(`Open with this hook — ${hookName} (${hook.type}).${tmpl}${ex}`)
@@ -206,7 +204,7 @@ function GeneratePageInner() {
         <div className="bg-surface border border-white/5 rounded-2xl p-6 lg:sticky lg:top-20">
           {referenceLoaded ? (
             <GeneratorForm
-              key={`form-${initialValues.nicheId ?? ''}-${initialValues.personaId ?? ''}-${initialValues.eraId ?? ''}`}
+              key={`form-${initialValues.nicheId ?? ''}-${initialValues.personaId ?? ''}-${initialValues.eraId ?? ''}-${(initialValues.customRules ?? '').length}`}
               niches={niches}
               personas={personas}
               eras={eras}

@@ -78,8 +78,7 @@ export default function PersonaCollabBuilder({
         <h3 className="font-display text-xl font-bold text-[#E8E8F0] mb-6">Pre-built Bands</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {collaborations.map((collab) => {
-            const name = (collab as Record<string, unknown>).name as string | undefined
-            const bandName = name || collab.id
+            const bandName = collab.name ?? collab.id
             const collabPersonas = collab.personas
               .map((id) => personaMap[id])
               .filter(Boolean)
@@ -116,13 +115,13 @@ export default function PersonaCollabBuilder({
                 </div>
 
                 {/* Dynamic — 2-line clamp */}
-                <p className="font-sans text-sm text-[#8888A8] leading-relaxed line-clamp-2 flex-1">
+                <p className="font-sans text-sm text-[#C8C8DC] leading-relaxed line-clamp-2 flex-1">
                   {collab.dynamic}
                 </p>
 
                 {/* Output style */}
                 {collab.outputStyle && (
-                  <p className="font-sans text-xs text-[#8888A8]/70 italic leading-relaxed">
+                  <p className="font-sans text-xs text-[#C8C8DC]/85 italic leading-relaxed">
                     {collab.outputStyle}
                   </p>
                 )}
@@ -149,7 +148,7 @@ export default function PersonaCollabBuilder({
       {/* ── Section B: Custom Builder ── */}
       <div>
         <h3 className="font-display text-xl font-bold text-[#E8E8F0] mb-2">Custom Builder</h3>
-        <p className="font-sans text-sm text-[#8888A8] mb-6">
+        <p className="font-sans text-sm text-[#C8C8DC] mb-6">
           Select 2–3 personas to combine their voices into a custom band.
         </p>
 
@@ -210,7 +209,7 @@ export default function PersonaCollabBuilder({
             <span className="text-brand text-base mt-0.5 shrink-0">✦</span>
             <div>
               <p className="font-sans text-sm text-[#E8E8F0] font-medium mb-1">Combined voice effect</p>
-              <p className="font-sans text-sm text-[#8888A8] italic">{combinedEffect}</p>
+              <p className="font-sans text-sm text-[#C8C8DC] italic">{combinedEffect}</p>
             </div>
           </div>
         )}

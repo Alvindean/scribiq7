@@ -23,7 +23,16 @@ export default async function HomePage() {
   const featuredPersonas = personas.slice(0, 6)
   const featuredInteractions = interactions.slice(0, 3)
 
-  const nicheIdByName = new Map(niches.map((n) => [n.name.toLowerCase(), n.id]))
+  const lookupNicheId = (rawName: string): string | undefined => {
+    const lower = rawName.toLowerCase()
+    const exact = niches.find((n) => n.name.toLowerCase() === lower)
+    if (exact) return exact.id
+    const prefix = niches.find((n) => n.name.toLowerCase().startsWith(lower))
+    if (prefix) return prefix.id
+    const reverse = niches.find((n) => lower.startsWith(n.name.toLowerCase()))
+    if (reverse) return reverse.id
+    return undefined
+  }
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -224,7 +233,7 @@ export default async function HomePage() {
               type: string
             }
             const sourceNicheId = ia.sourceNiche
-              ? nicheIdByName.get(ia.sourceNiche.toLowerCase())
+              ? lookupNicheId(ia.sourceNiche)
               : undefined
             const cardHref = sourceNicheId
               ? `/bible/${sourceNicheId}`

@@ -50,7 +50,9 @@ export default async function InteractionsPage() {
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {interactions.map((interaction) => (
-          <InteractionCard key={interaction.id} interaction={interaction} />
+          <div key={interaction.id} id={interaction.id} className="scroll-mt-24">
+            <InteractionCard interaction={interaction} />
+          </div>
         ))}
       </div>
     </div>
@@ -108,7 +110,7 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
             {interaction.title}
           </h3>
         )}
-        <p className="text-sm font-sans text-[#E8E8F0]/70 leading-relaxed line-clamp-3">
+        <p className="text-sm font-sans text-[#C8C8DC] leading-relaxed line-clamp-3">
           {interaction.description}
         </p>
       </div>
@@ -121,7 +123,7 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
               key={i}
               className="px-3 py-2.5 bg-canvas rounded-lg border-l-2 border-brand/40"
             >
-              <p className="text-xs font-mono text-brand/90 leading-relaxed">{ex}</p>
+              <p className="text-sm font-sans italic text-[#C8C8DC] leading-relaxed">{ex}</p>
             </div>
           ))}
         </div>
@@ -133,7 +135,7 @@ function InteractionCard({ interaction }: { interaction: InteractionFull }) {
           <p className="text-xs font-sans font-semibold uppercase tracking-[0.1em] text-[#8888A8]">
             Apply It
           </p>
-          <p className="text-xs font-sans text-[#E8E8F0]/60 leading-relaxed">
+          <p className="text-sm font-sans text-[#C8C8DC] leading-relaxed">
             {interaction.practicalApplication}
           </p>
         </div>
