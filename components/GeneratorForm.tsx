@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
 import { GenerateOptions } from '@/lib/claude'
+import type { CustomVoice } from '@/lib/customVoice'
+import { customVoiceToCustomRules } from '@/lib/customVoice'
 
 interface GeneratorFormProps {
   niches: Array<{ id: string; name: string }>
@@ -14,9 +16,12 @@ interface GeneratorFormProps {
   initialEraId?: string
   initialCustomRules?: string
   autoLoadSample?: boolean
+  customVoice?: CustomVoice | null
   onSubmit: (formData: GenerateOptions & { nicheId?: string; personaId?: string }) => void
   isLoading: boolean
 }
+
+const CUSTOM_VOICE_ID = 'custom'
 
 const SAMPLE_TOPIC =
   'A 12-second decision that compounded into a $40K mistake — and the simple test I now use to avoid it'
@@ -38,9 +43,11 @@ export function GeneratorForm({
   initialEraId,
   initialCustomRules,
   autoLoadSample,
+  customVoice,
   onSubmit,
   isLoading,
 }: GeneratorFormProps) {
+  const [length, setLength] = useState<'short' | 'medium' | 'long'>('medium')
   const [topic, setTopic] = useState(autoLoadSample ? SAMPLE_TOPIC : '')
   const [nicheId, setNicheId] = useState(() => {
     if (initialNicheId) return initialNicheId
@@ -108,19 +115,36 @@ export function GeneratorForm({
     e.preventDefault()
 
     const selectedNiche = niches.find((n) => n.id === nicheId)
-    const selectedPersona = personas.find((p) => p.id === personaId)
     const selectedEra = eras.find((era) => era.id === eraInfluence)
+
+    const usingCustomVoice = personaId === CUSTOM_VOICE_ID && customVoice
+    const selectedPersona = !usingCustomVoice ? personas.find((p) => p.id === personaId) : null
+
+    const personaName = usingCustomVoice
+      ? customVoice.name
+      : selectedPersona?.name ?? personaId
+
+    // Compose customRules: existing form rules + custom-voice profile (if selected)
+    const composedRules = [
+      customRules || undefined,
+      usingCustomVoice ? customVoiceToCustomRules(customVoice) : undefined,
+    ]
+      .filter(Boolean)
+      .join('\n\n')
 
     onSubmit({
       topic,
       niche: selectedNiche?.name ?? nicheId,
-      persona: selectedPersona?.name ?? personaId,
+      persona: personaName,
       targetAudience,
       eraInfluence: selectedEra?.name,
       toneNotes: toneNotes || undefined,
-      customRules: customRules || undefined,
+      customRules: composedRules || undefined,
+      length,
       nicheId: nicheId || undefined,
-      personaId: personaId || undefined,
+      // For custom voice we deliberately drop personaId so the server
+      // doesn't try to look it up in the bible (it's client-side only).
+      personaId: usingCustomVoice ? undefined : personaId || undefined,
     })
   }
 
@@ -220,6 +244,11 @@ export function GeneratorForm({
             <option value="" disabled className={optionClass}>
               Select persona
             </option>
+            {customVoice && (
+              <option value={CUSTOM_VOICE_ID} className={optionClass}>
+                ★ {customVoice.name} (your voice)
+              </option>
+            )}
             {personas.map((p) => (
               <option key={p.id} value={p.id} className={optionClass}>
                 {p.name}
@@ -243,6 +272,38 @@ export function GeneratorForm({
           onChange={(e) => setTargetAudience(e.target.value)}
           required
         />
+      </div>
+
+      {/* Length */}
+      <div>
+        <span className={labelClass}>Length</span>
+        <div className="grid grid-cols-3 gap-1.5 bg-white/5 border border-white/10 rounded-xl p-1">
+          {(['short', 'medium', 'long'] as const).map((opt) => {
+            const active = length === opt
+            return (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setLength(opt)}
+                className={cn(
+                  'text-xs font-sans py-2 rounded-lg capitalize transition-colors',
+                  active
+                    ? 'bg-brand/15 text-brand font-semibold'
+                    : 'text-[#C8C8DC] hover:text-[#E8E8F0]',
+                )}
+              >
+                {opt}
+              </button>
+            )
+          })}
+        </div>
+        <p className="mt-1.5 text-[11px] font-sans text-[#8888A8]">
+          {length === 'short'
+            ? '~250 words — single tight unit'
+            : length === 'medium'
+            ? '~500–700 words — fully developed'
+            : '~1000–1400 words — multi-section'}
+        </p>
       </div>
 
       {/* Era Influence */}

@@ -91,6 +91,9 @@ export async function POST(req: NextRequest) {
   const nicheData = nicheId ? ((await getNiche(nicheId)) ?? undefined) : undefined
   const personaData = personaId ? ((await getPersona(personaId)) ?? undefined) : undefined
 
+  const length =
+    body.length === 'short' || body.length === 'long' ? body.length : 'medium'
+
   const options: GenerateOptions = {
     niche,
     persona,
@@ -99,6 +102,7 @@ export async function POST(req: NextRequest) {
     eraInfluence: trimField(body.eraInfluence, FIELD_CAPS.eraInfluence) || undefined,
     toneNotes: trimField(body.toneNotes, FIELD_CAPS.toneNotes) || undefined,
     customRules: trimField(body.customRules, FIELD_CAPS.customRules) || undefined,
+    length,
     nicheData,
     personaData,
   }

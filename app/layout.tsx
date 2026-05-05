@@ -37,6 +37,7 @@ const navLinks = [
   { label: 'Personas', href: '/personas' },
   { label: 'Hooks', href: '/hooks' },
   { label: 'Generate', href: '/generate' },
+  { label: 'Library', href: '/library' },
   { label: 'Eras', href: '/eras' },
   { label: 'Interactions', href: '/interactions' },
 ]

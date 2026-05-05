@@ -5,6 +5,8 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type GenerateLength = 'short' | 'medium' | 'long'
+
 export interface GenerateOptions {
   niche: string
   persona: string
@@ -13,8 +15,21 @@ export interface GenerateOptions {
   topic: string
   toneNotes?: string
   customRules?: string
+  length?: GenerateLength
   nicheData?: Niche
   personaData?: Persona
+}
+
+const LENGTH_TOKENS: Record<GenerateLength, number> = {
+  short: 800,
+  medium: 2048,
+  long: 4096,
+}
+
+const LENGTH_GUIDANCE: Record<GenerateLength, string> = {
+  short: 'Keep the copy tight — under ~250 words. Single focused unit.',
+  medium: 'Aim for ~500-700 words. Develop the idea fully but ruthlessly.',
+  long: 'Aim for ~1000-1400 words. Multi-section, with clear pacing.',
 }
 
 // ─── Prompt builder ───────────────────────────────────────────────────────────
@@ -119,10 +134,15 @@ export async function generateCopy(options: GenerateOptions): Promise<ReadableSt
 
   const userMessage = userMessageParts.filter((l) => l !== undefined).join('\n')
 
+  const length: GenerateLength = options.length ?? 'medium'
+  const maxTokens = LENGTH_TOKENS[length]
+  const lengthGuidance = LENGTH_GUIDANCE[length]
+  const finalSystem = systemPrompt + `\n\n## Length\n${lengthGuidance}`
+
   const stream = await client.messages.stream({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
-    system: systemPrompt,
+    max_tokens: maxTokens,
+    system: finalSystem,
     messages: [{ role: 'user', content: userMessage }],
   })
 

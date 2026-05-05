@@ -1,11 +1,14 @@
 'use client'
 
 import { Suspense, useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { GeneratorForm } from '@/components/GeneratorForm'
 import { CopyOutput } from '@/components/CopyOutput'
 import { GenerateOptions } from '@/lib/claude'
+import { saveEntry } from '@/lib/library'
+import { loadCustomVoice, type CustomVoice } from '@/lib/customVoice'
 import type { Niche, Persona, Era, Hook, Collaboration, Interaction } from '@/lib/bible'
 
 async function streamGenerate(
@@ -73,6 +76,11 @@ function GeneratePageInner() {
   const [hooks, setHooks] = useState<Hook[]>([])
   const [interactions, setInteractions] = useState<Interaction[]>([])
   const [referenceLoaded, setReferenceLoaded] = useState(false)
+  const [customVoice, setCustomVoice] = useState<CustomVoice | null>(null)
+
+  useEffect(() => {
+    setCustomVoice(loadCustomVoice())
+  }, [])
 
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -207,16 +215,28 @@ function GeneratePageInner() {
     queryInteractionId,
   ])
 
+  const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
+
   async function handleSubmit(
     formData: GenerateOptions & { nicheId?: string; personaId?: string }
   ) {
     setContent('')
     setError(undefined)
     setAppliedData(null)
+    setSavedEntryId(null)
     setIsLoading(true)
 
+    let collected = ''
+    const onChunk: React.Dispatch<React.SetStateAction<string>> = (updater) => {
+      setContent((prev) => {
+        const next = typeof updater === 'function' ? (updater as (p: string) => string)(prev) : updater
+        collected = next
+        return next
+      })
+    }
+
     try {
-      await streamGenerate(formData, setContent)
+      await streamGenerate(formData, onChunk)
 
       // Build science overlay data
       const selectedNiche = niches.find((n) => n.id === formData.nicheId)
@@ -227,6 +247,23 @@ function GeneratePageInner() {
         nicheRules: selectedNiche?.rules?.slice(0, 3),
         personaVoice: selectedPersona?.voiceCharacteristics?.slice(0, 3),
       })
+
+      // Auto-save to library
+      if (collected.trim().length > 0) {
+        const entry = saveEntry({
+          topic: formData.topic,
+          niche: formData.niche,
+          persona: formData.persona,
+          targetAudience: formData.targetAudience,
+          eraInfluence: formData.eraInfluence,
+          toneNotes: formData.toneNotes,
+          customRules: formData.customRules,
+          nicheId: formData.nicheId,
+          personaId: formData.personaId,
+          content: collected,
+        })
+        setSavedEntryId(entry.id)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
@@ -238,11 +275,36 @@ function GeneratePageInner() {
 
   return (
     <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-10">
-      <SectionHeader
-        label="Scribe IQ"
-        title="Generate Copy"
-        subtitle="AI-powered. Bible-informed. Persona-driven."
-      />
+      <div className="flex items-end justify-between gap-6 flex-wrap">
+        <SectionHeader
+          label="Scribe IQ"
+          title="Generate Copy"
+          subtitle="AI-powered. Bible-informed. Persona-driven."
+        />
+        <div className="flex items-center gap-5">
+          <Link
+            href="/brand-voice"
+            className="inline-flex items-center gap-1.5 text-sm font-sans text-[#C8C8DC] hover:text-brand transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 5l4-3 4 3v4l-4 3-4-3z" />
+            </svg>
+            {customVoice ? 'My voice' : 'Train my voice'}
+          </Link>
+          <Link
+            href="/library"
+            className="inline-flex items-center gap-1.5 text-sm font-sans text-[#C8C8DC] hover:text-brand transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h10v8H2zM2 6h10" />
+            </svg>
+            Library
+            {savedEntryId && (
+              <span className="ml-1 text-xs font-semibold text-brand">• saved</span>
+            )}
+          </Link>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[26fr_74fr] gap-8 items-start">
         {/* Left: Form */}
@@ -258,6 +320,7 @@ function GeneratePageInner() {
               initialEraId={initialValues.eraId}
               initialCustomRules={initialValues.customRules}
               autoLoadSample={!hasAnyQueryParam}
+              customVoice={customVoice}
               onSubmit={handleSubmit}
               isLoading={isLoading}
             />
